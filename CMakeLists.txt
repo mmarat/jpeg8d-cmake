@@ -404,7 +404,6 @@ add_executable(rdjpgcom ${rdjpgcom_SRCS})
 target_link_libraries(rdjpgcom )
 
 
-
 ########### next target ###############
 
 set(wrjpgcom_SRCS wrjpgcom.c)
@@ -414,6 +413,7 @@ add_executable(wrjpgcom ${wrjpgcom_SRCS})
 target_link_libraries(wrjpgcom )
 
 
+export(TARGETS jpeg FILE jpeg-targets.cmake )
 
 ########### install files ###############
 
@@ -422,6 +422,7 @@ install(TARGETS jpeg cjpeg djpeg jpegtran rdjpgcom wrjpgcom
   RUNTIME DESTINATION bin)
 
 install(FILES  ${INSTINCLUDES} DESTINATION include)
+# install(EXPORT jpeg DESTINATION cmake/jpeg)
 
 include(InstallRequiredSystemLibraries)
 include(CPack)
