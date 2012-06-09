@@ -424,6 +424,7 @@ export(TARGETS jpeg FILE jpeg-targets.cmake )
 
 install(TARGETS jpeg cjpeg djpeg jpegtran rdjpgcom wrjpgcom 
   LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
   RUNTIME DESTINATION bin)
 
 install(FILES  ${INSTINCLUDES} DESTINATION include)
