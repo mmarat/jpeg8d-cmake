@@ -334,7 +334,12 @@ set(TESTFILES testorig.jpg testimg.ppm testimg.bmp testimg.jpg testprog.jpg
 
 set(jpeg_LIB_SRCS ${LIBSOURCES})
 
-add_library(jpeg SHARED ${jpeg_LIB_SRCS})
+if( WIN32 )
+	add_library(jpeg STATIC ${jpeg_LIB_SRCS})
+else()
+	add_library(jpeg SHARED ${jpeg_LIB_SRCS})
+endif()
+
 set_target_properties(jpeg PROPERTIES VERSION 8.4.0 SOVERSION 8)
 if(gcc_Wl_version_script)
 	# TODO: this does not seem necessary as libjpeg.map is basically empty
