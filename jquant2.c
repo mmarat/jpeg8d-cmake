@@ -1037,6 +1037,7 @@ pass2_fs_dither (j_decompress_ptr cinfo,
       /* Now emit the colormap index for this cell */
       { register int pixcode = *cachep - 1;
 	*outptr = (JSAMPLE) pixcode;
+        printf(" c:%4d %3d", col, *outptr);
 	/* Compute representation error for this pixel */
 	cur0 -= GETJSAMPLE(colormap0[pixcode]);
 	cur1 -= GETJSAMPLE(colormap1[pixcode]);
@@ -1089,6 +1090,7 @@ pass2_fs_dither (j_decompress_ptr cinfo,
     errorptr[1] = (FSERROR) bpreverr1;
     errorptr[2] = (FSERROR) bpreverr2;
   }
+  printf("\nerrors: %4d %4d %4d\n", errorptr[0], errorptr[1],errorptr[2]);
 }
 
 
