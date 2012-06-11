@@ -1059,11 +1059,14 @@ pass2_fs_dither (j_decompress_ptr cinfo,
 	bnexterr = cur0;	/* Process component 0 */
 	delta = cur0 * 2;
 	cur0 += delta;		/* form error * 3 */
+        printf(" 3*cur0=%d", cur0);
 	errorptr[0] = (FSERROR) (bpreverr0 + cur0);
 	cur0 += delta;		/* form error * 5 */
+        printf(" 5*cur0=%d", cur0);
 	bpreverr0 = belowerr0 + cur0;
 	belowerr0 = bnexterr;
 	cur0 += delta;		/* form error * 7 */
+        printf(" 7*cur0=%d", cur0);
 	bnexterr = cur1;	/* Process component 1 */
 	delta = cur1 * 2;
 	cur1 += delta;		/* form error * 3 */
@@ -1080,7 +1083,8 @@ pass2_fs_dither (j_decompress_ptr cinfo,
 	bpreverr2 = belowerr2 + cur2;
 	belowerr2 = bnexterr;
 	cur2 += delta;		/* form error * 7 */
-        printf(" belowerr=(%3d %3d %3d)\n", belowerr0, belowerr1, belowerr2);
+        printf(" p7=(%3d %3d %3d)", cur0, cur1, cur2);
+        printf(" bpreverr=(%3d %3d %3d)\n", bpreverr0, bpreverr1, bpreverr2);
       }
       /* At this point curN contains the 7/16 error value to be propagated
        * to the next pixel on the current line, and all the errors for the
