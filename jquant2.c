@@ -1010,6 +1010,8 @@ pass2_fs_dither (j_decompress_ptr cinfo,
        * for either sign of the error value.
        * Note: errorptr points to *previous* column's array entry.
        */
+      printf(" p0=(%3d, %3d, %3d) err=(%3d, %3d, %3d)", cur0, cur1, cur2,
+          errorptr[dir3+0], errorptr[dir3+1], errorptr[dir3+2] );
       cur0 = RIGHT_SHIFT(cur0 + errorptr[dir3+0] + 8, 4);
       cur1 = RIGHT_SHIFT(cur1 + errorptr[dir3+1] + 8, 4);
       cur2 = RIGHT_SHIFT(cur2 + errorptr[dir3+2] + 8, 4);
@@ -1040,7 +1042,7 @@ pass2_fs_dither (j_decompress_ptr cinfo,
       /* Now emit the colormap index for this cell */
       { register int pixcode = *cachep - 1;
 	*outptr = (JSAMPLE) pixcode;
-        printf(" c:%4d (%3d %3d %3d) %3d", col, GETJSAMPLE(inptr[0]),GETJSAMPLE(inptr[1]),
+        printf(" c:%4d (%3d %3d %3d) %3d\n", col, GETJSAMPLE(inptr[0]),GETJSAMPLE(inptr[1]),
            GETJSAMPLE(inptr[2]), *outptr);
 	/* Compute representation error for this pixel */
 	cur0 -= GETJSAMPLE(colormap0[pixcode]);
