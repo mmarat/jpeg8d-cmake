@@ -975,7 +975,8 @@ pass2_fs_dither (j_decompress_ptr cinfo,
   JSAMPROW colormap2 = cinfo->colormap[2];
   SHIFT_TEMPS
 
-  printf("mrt pass2 fs dither colormap: %3d, %3d, %3d\n", colormap0[0], colormap1[10], colormap2[30]);
+  printf("mrt pass2 fs dither range: %3d, %3d, %3d, error: %d, sizeof(cur0): %d\n", range_limit[0],
+    range_limit[10], range_limit[30], error_limit[17], sizeof(cur0) );
   for (row = 0; row < num_rows; row++) {
     inptr = input_buf[row];
     outptr = output_buf[row];
@@ -1037,7 +1038,7 @@ pass2_fs_dither (j_decompress_ptr cinfo,
       /* Now emit the colormap index for this cell */
       { register int pixcode = *cachep - 1;
 	*outptr = (JSAMPLE) pixcode;
-        printf(" c:%4d %3d", col, *outptr);
+        printf(" c:%4d (%3d %3d %3d) %3d", col, GETJSAMPLE(inptr[0]),GETJSAMPLE(inptr[1]),GETJSAMPLE(inptr[2]), *outptr);
 	/* Compute representation error for this pixel */
 	cur0 -= GETJSAMPLE(colormap0[pixcode]);
 	cur1 -= GETJSAMPLE(colormap1[pixcode]);
