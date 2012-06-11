@@ -1042,12 +1042,13 @@ pass2_fs_dither (j_decompress_ptr cinfo,
       /* Now emit the colormap index for this cell */
       { register int pixcode = *cachep - 1;
 	*outptr = (JSAMPLE) pixcode;
-        printf(" c:%4d (%3d %3d %3d) %3d\n", col, GETJSAMPLE(inptr[0]),GETJSAMPLE(inptr[1]),
+        printf(" c:%4d (%3d %3d %3d) %3d", col, GETJSAMPLE(inptr[0]),GETJSAMPLE(inptr[1]),
            GETJSAMPLE(inptr[2]), *outptr);
 	/* Compute representation error for this pixel */
 	cur0 -= GETJSAMPLE(colormap0[pixcode]);
 	cur1 -= GETJSAMPLE(colormap1[pixcode]);
 	cur2 -= GETJSAMPLE(colormap2[pixcode]);
+        printf(" p6=(%3d, %3d, %3d)", cur0, cur1, cur2);
       }
       /* Compute error fractions to be propagated to adjacent pixels.
        * Add these into the running sums, and simultaneously shift the
@@ -1079,6 +1080,7 @@ pass2_fs_dither (j_decompress_ptr cinfo,
 	bpreverr2 = belowerr2 + cur2;
 	belowerr2 = bnexterr;
 	cur2 += delta;		/* form error * 7 */
+        printf(" belowerr=(%3d %3d %3d)\n", belowerr0, belowerr1, belowerr2);
       }
       /* At this point curN contains the 7/16 error value to be propagated
        * to the next pixel on the current line, and all the errors for the
