@@ -195,7 +195,7 @@ select_ncolors (j_decompress_ptr cinfo, int Ncolors[])
   boolean changed;
   long temp;
   static const int RGB_order[3] = { RGB_GREEN, RGB_RED, RGB_BLUE };
-
+  printf("mrt select_ncolors\n");
   /* We can allocate at least the nc'th root of max_colors per component. */
   /* Compute floor(nc'th root of max_colors). */
   iroot = 1;
@@ -478,6 +478,7 @@ color_quantize (j_decompress_ptr cinfo, JSAMPARRAY input_buf,
       for (ci = 0; ci < nc; ci++) {
 	pixcode += GETJSAMPLE(colorindex[ci][GETJSAMPLE(*ptrin++)]);
       }
+      printf("mrt: %d\n", pixcode);
       *ptrout++ = (JSAMPLE) pixcode;
     }
   }
@@ -489,6 +490,7 @@ color_quantize3 (j_decompress_ptr cinfo, JSAMPARRAY input_buf,
 		 JSAMPARRAY output_buf, int num_rows)
 /* Fast path for out_color_components==3, no dithering */
 {
+  printf("\nmrt 2\n");
   my_cquantize_ptr cquantize = (my_cquantize_ptr) cinfo->cquantize;
   register int pixcode;
   register JSAMPROW ptrin, ptrout;
@@ -528,6 +530,7 @@ quantize_ord_dither (j_decompress_ptr cinfo, JSAMPARRAY input_buf,
   int row;
   JDIMENSION col;
   JDIMENSION width = cinfo->output_width;
+  printf("\nmrt 1\n");
 
   for (row = 0; row < num_rows; row++) {
     /* Initialize output values to 0 so can process components separately */
@@ -581,7 +584,7 @@ quantize3_ord_dither (j_decompress_ptr cinfo, JSAMPARRAY input_buf,
   int row;
   JDIMENSION col;
   JDIMENSION width = cinfo->output_width;
-
+  printf("\nmrt\n");
   for (row = 0; row < num_rows; row++) {
     row_index = cquantize->row_index;
     input_ptr = input_buf[row];
@@ -832,7 +835,7 @@ jinit_1pass_quantizer (j_decompress_ptr cinfo)
   cquantize->pub.new_color_map = new_color_map_1_quant;
   cquantize->fserrors[0] = NULL; /* Flag FS workspace not allocated */
   cquantize->odither[0] = NULL;	/* Also flag odither arrays not allocated */
-
+  printf("mrt jinit_1pass_quant\n");
   /* Make sure my internal arrays won't overflow */
   if (cinfo->out_color_components > MAX_Q_COMPS)
     ERREXIT1(cinfo, JERR_QUANT_COMPONENTS, MAX_Q_COMPS);

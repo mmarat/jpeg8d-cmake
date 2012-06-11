@@ -533,6 +533,7 @@ compute_color (j_decompress_ptr cinfo, boxptr boxp, int icolor)
   cinfo->colormap[0][icolor] = (JSAMPLE) ((c0total + (total>>1)) / total);
   cinfo->colormap[1][icolor] = (JSAMPLE) ((c1total + (total>>1)) / total);
   cinfo->colormap[2][icolor] = (JSAMPLE) ((c2total + (total>>1)) / total);
+  printf("mrt comput_color: %3d == (%3d, %3d, %3d)\n", icolor, cinfo->colormap[0][icolor], cinfo->colormap[1][icolor], cinfo->colormap[2][icolor]);
 }
 
 
@@ -925,7 +926,7 @@ pass2_no_dither (j_decompress_ptr cinfo,
   int row;
   JDIMENSION col;
   JDIMENSION width = cinfo->output_width;
-
+  printf("mrt pass2 no dither width: %d\n", width);
   for (row = 0; row < num_rows; row++) {
     inptr = input_buf[row];
     outptr = output_buf[row];
@@ -972,6 +973,7 @@ pass2_fs_dither (j_decompress_ptr cinfo,
   JSAMPROW colormap2 = cinfo->colormap[2];
   SHIFT_TEMPS
 
+  printf("mrt pass2 fs dither colormap: %3d, %3d, %3d\n", colormap0[0], colormap1[10], colormap2[30]);
   for (row = 0; row < num_rows; row++) {
     inptr = input_buf[row];
     outptr = output_buf[row];
@@ -1277,6 +1279,7 @@ jinit_2pass_quantizer (j_decompress_ptr cinfo)
   if (cinfo->enable_2pass_quant) {
     /* Make sure color count is acceptable */
     int desired = cinfo->desired_number_of_colors;
+    printf("mrt jinit_2pass_quant\n");
     /* Lower bound on # of colors ... somewhat arbitrary as long as > 0 */
     if (desired < 8)
       ERREXIT1(cinfo, JERR_QUANT_FEW_COLORS, 8);
