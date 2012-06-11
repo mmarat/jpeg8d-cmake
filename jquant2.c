@@ -975,7 +975,7 @@ pass2_fs_dither (j_decompress_ptr cinfo,
   JSAMPROW colormap2 = cinfo->colormap[2];
   SHIFT_TEMPS
 
-  printf("mrt pass2 fs dither range: %3d, %3d, %3d, error: %d, sizeof(cur0): %d\n", range_limit[0],
+  printf("mrt pass2 fs dither range: %3d, %3d, %3d, error: %d, sizeof(cur0): %ld\n", range_limit[0],
     range_limit[10], range_limit[30], error_limit[17], sizeof(cur0) );
   for (row = 0; row < num_rows; row++) {
     inptr = input_buf[row];
@@ -1013,6 +1013,7 @@ pass2_fs_dither (j_decompress_ptr cinfo,
       cur0 = RIGHT_SHIFT(cur0 + errorptr[dir3+0] + 8, 4);
       cur1 = RIGHT_SHIFT(cur1 + errorptr[dir3+1] + 8, 4);
       cur2 = RIGHT_SHIFT(cur2 + errorptr[dir3+2] + 8, 4);
+      printf(" p1=(%3d, %3d, %3d)", cur0, cur1, cur2);
       /* Limit the error using transfer function set by init_error_limit.
        * See comments with init_error_limit for rationale.
        */
@@ -1031,6 +1032,7 @@ pass2_fs_dither (j_decompress_ptr cinfo,
       cur2 = GETJSAMPLE(range_limit[cur2]);
       /* Index into the cache with adjusted pixel value */
       cachep = & histogram[cur0>>C0_SHIFT][cur1>>C1_SHIFT][cur2>>C2_SHIFT];
+      printf(" p5=(%d, %d, %d)", (cur0>>C0_SHIFT), (cur1>>C1_SHIFT), (cur2>>C2_SHIFT));
       /* If we have not seen this color before, find nearest colormap */
       /* entry and update the cache */
       if (*cachep == 0)
@@ -1038,7 +1040,8 @@ pass2_fs_dither (j_decompress_ptr cinfo,
       /* Now emit the colormap index for this cell */
       { register int pixcode = *cachep - 1;
 	*outptr = (JSAMPLE) pixcode;
-        printf(" c:%4d (%3d %3d %3d) %3d", col, GETJSAMPLE(inptr[0]),GETJSAMPLE(inptr[1]),GETJSAMPLE(inptr[2]), *outptr);
+        printf(" c:%4d (%3d %3d %3d) %3d", col, GETJSAMPLE(inptr[0]),GETJSAMPLE(inptr[1]),
+           GETJSAMPLE(inptr[2]), *outptr);
 	/* Compute representation error for this pixel */
 	cur0 -= GETJSAMPLE(colormap0[pixcode]);
 	cur1 -= GETJSAMPLE(colormap1[pixcode]);
