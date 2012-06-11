@@ -1,0 +1,9 @@
+/* cmake-flags.h.in --- source file edited by configure script */
+
+#cmakedefine CMAKE_BUILD_TYPE  "@CMAKE_BUILD_TYPE@"
+#cmakedefine CMAKE_C_FLAGS  "@CMAKE_C_FLAGS@"
+#define COMPILE_DEFINITIONS  "@jpeg_COMPILE_DEFINITIONS@" 
+#define LINK_FLAGS  "@jpeg_LINK_FLAGS@" 
+#cmakedefine CMAKE_C_FLAGS_RELEASE  "@CMAKE_C_FLAGS_RELEASE@"
+#cmakedefine CMAKE_C_FLAGS_DEBUG  "@CMAKE_C_FLAGS_DEBUG@"
+#cmakedefine CMAKE_SIZEOF_VOID_P  "@CMAKE_SIZEOF_VOID_P@"

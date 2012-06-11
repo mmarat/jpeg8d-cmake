@@ -236,7 +236,6 @@ endif()
 
 
 
-configure_file(jconfig-cmake.cfg jconfig.h)
 message(STATUS "sizeof( void* ) == ${CMAKE_SIZEOF_VOID_P}")
 message(STATUS "BUILD TYPE: ${CMAKE_BUILD_TYPE}")
 
@@ -266,6 +265,8 @@ endif()
 set( CMAKE_C_FLAGS ${CMAKE_C_FLAGS} ${CWARNFLAGS} )
 message(STATUS "C Flags: ${CMAKE_C_FLAGS}")
 message(STATUS "RELEASE C Flags: ${CMAKE_C_FLAGS_RELEASE}")
+
+get_directory_property(jpeg_COMPILE_DEFINITIONS COMPILE_DEFINITIONS)
 
 ########### next target ###############
 ## Sources to build library
@@ -416,6 +417,12 @@ set(wrjpgcom_SRCS wrjpgcom.c)
 add_executable(wrjpgcom ${wrjpgcom_SRCS})
 
 target_link_libraries(wrjpgcom )
+
+########## setup configuration headers ###########
+get_target_property(jpeg_LINK_FLAGS jpeg LINK_FLAGS)
+
+configure_file(jconfig-cmake.cfg jconfig.h)
+configure_file(cmake-flags.h.in cmake-flags.h)
 
 
 export(TARGETS jpeg FILE jpeg-targets.cmake )
