@@ -13,7 +13,7 @@ include (CheckLibraryExists)
 include (CheckSymbolExists)
 include (CheckTypeSize)
 include (CheckVariableExists)
-include (CheckPrototypeDefinition)
+# include (CheckPrototypeDefinition) # not in 2.8.4
 include (CheckCSourceCompiles)
 include (CheckCSourceRuns)
 include (CheckCCompilerFlag)
@@ -39,11 +39,11 @@ check_type_size("unsigned short" UNSIGNED_SHORT)
 
 check_symbol_exists(tmpfile stdio.h HAVE_TMPFILE_SYMBOL)
 check_function_exists(tmpfile HAVE_TMPFILE_FUNC)
-check_prototype_definition(tmpfile "FILE *tmpfile()" NULL stdio.h HAVE_TMPFILE_DEFINITION)
+# check_prototype_definition(tmpfile "FILE *tmpfile()" NULL stdio.h HAVE_TMPFILE_DEFINITION)
 
 check_symbol_exists(mktemp stdlib.h HAVE_MKTEMP_SYMBOL)
 check_function_exists(mktemp HAVE_MKTEMP_FUNC)
-check_prototype_definition(mktemp "char* mktemp(char* filename)" NULL stdlib.h HAVE_MKTEMP_DEFINITION)
+# check_prototype_definition(mktemp "char* mktemp(char* filename)" NULL stdlib.h HAVE_MKTEMP_DEFINITION)
 
 if( NOT ( HAVE_MKTEMP_SYMBOL AND HAVE_MKTEMP_FUNC AND HAVE_MKTEMP_DEFINITION) )
 	set(NO_MKTEMP 1)
