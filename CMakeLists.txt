@@ -262,8 +262,9 @@ elseif( MSVC )
 	message(STATUS "Microsoft C/C++")
 	if( MSVC_VERSION EQUAL 1600 )
 		message(STATUS "Broken Microsoft Visual Studio 10  C/C++ 16.00 ? Disabling optimization flags.")
+		# default by cmake: /MD /O2 /Ob2 /D NDEBUG
 		# should try to disable it only for jquant2.c
-		set(CMAKE_C_FLAGS_RELEASE "")
+		set(CMAKE_C_FLAGS_RELEASE "/MD /D NDEBUG")
 	endif()
 else()
 	message(STATUS "not GCC")
