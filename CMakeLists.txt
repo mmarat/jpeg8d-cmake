@@ -260,7 +260,7 @@ if( CMAKE_COMPILER_IS_GNUCC )
 	check_c_compiler_flag("-no-undefined" gcc_no_undefined)
 elseif( MSVC )
 	message(STATUS "Microsoft C/C++")
-	if( ${MSVC_VERSION} == 1600 )
+	if( MSVC_VERSION EQUAL 1600 )
 		message(STATUS "Broken Microsoft Visual Studio 10  C/C++ 16.00 ? Disabling optimization flags.")
 		# should try to disable it only for jquant2.c
 		set(CMAKE_C_FLAGS_RELEASE "")
