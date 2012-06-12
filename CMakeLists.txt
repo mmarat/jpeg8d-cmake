@@ -260,6 +260,7 @@ if( CMAKE_COMPILER_IS_GNUCC )
 	check_c_compiler_flag("-no-undefined" gcc_no_undefined)
 elseif( MSVC )
 	message(STATUS "Microsoft C/C++")
+	add_definitions("/D _CRT_SECURE_NO_WARNINGS") # disable non-secure API warnings
 	if( MSVC_VERSION EQUAL 1600 )
 		message(STATUS "Broken Microsoft Visual Studio 10  C/C++ 16.00 ? Disabling optimization flags.")
 		# default by cmake: /MD /O2 /Ob2 /D NDEBUG
@@ -271,10 +272,11 @@ else()
 endif()
 
 set( CMAKE_C_FLAGS ${CMAKE_C_FLAGS} ${CWARNFLAGS} )
-message(STATUS "C Flags: ${CMAKE_C_FLAGS}")
-message(STATUS "RELEASE C Flags: ${CMAKE_C_FLAGS_RELEASE}")
+message(STATUS "jpeg C Flags: ${CMAKE_C_FLAGS}")
+message(STATUS "jpeg RELEASE C Flags: ${CMAKE_C_FLAGS_RELEASE}")
 
 get_directory_property(jpeg_COMPILE_DEFINITIONS COMPILE_DEFINITIONS)
+message(STATUS "jpeg C Definitions: ${jpeg_COMPILE_DEFINITIONS}")
 
 ########### next target ###############
 ## Sources to build library
