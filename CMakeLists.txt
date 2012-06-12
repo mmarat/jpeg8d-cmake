@@ -260,7 +260,7 @@ if( CMAKE_COMPILER_IS_GNUCC )
 	check_c_compiler_flag("-no-undefined" gcc_no_undefined)
 elseif( MSVC )
 	message(STATUS "Microsoft C/C++")
-	add_definitions("/D _CRT_SECURE_NO_WARNINGS") # disable non-secure API warnings
+	add_definitions("-D_CRT_SECURE_NO_WARNINGS") # disable non-secure API warnings
 	if( MSVC_VERSION EQUAL 1600 )
 		message(STATUS "Broken Microsoft Visual Studio 10  C/C++ 16.00 ? Disabling optimization flags.")
 		# default by cmake: /MD /O2 /Ob2 /D NDEBUG
@@ -432,6 +432,7 @@ target_link_libraries(wrjpgcom )
 
 ########## setup configuration headers ###########
 get_target_property(jpeg_LINK_FLAGS jpeg LINK_FLAGS)
+message(STATUS "jpeg LINK FLAGS: ${jpeg_LINK_FLAGS}")
 
 exec_program(
     "git"
