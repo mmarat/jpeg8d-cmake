@@ -18,8 +18,6 @@
  * fundamental assumptions even hold with an irregularly spaced color map.
  */
 
-#include <stdio.h>
-
 #define JPEG_INTERNALS
 #include "jinclude.h"
 #include "jpeglib.h"
@@ -535,7 +533,6 @@ compute_color (j_decompress_ptr cinfo, boxptr boxp, int icolor)
   cinfo->colormap[0][icolor] = (JSAMPLE) ((c0total + (total>>1)) / total);
   cinfo->colormap[1][icolor] = (JSAMPLE) ((c1total + (total>>1)) / total);
   cinfo->colormap[2][icolor] = (JSAMPLE) ((c2total + (total>>1)) / total);
-  printf("mrt comput_color: %3d == (%3d, %3d, %3d)\n", icolor, cinfo->colormap[0][icolor], cinfo->colormap[1][icolor], cinfo->colormap[2][icolor]);
 }
 
 
@@ -928,7 +925,7 @@ pass2_no_dither (j_decompress_ptr cinfo,
   int row;
   JDIMENSION col;
   JDIMENSION width = cinfo->output_width;
-  printf("mrt pass2 no dither width: %d\n", width);
+
   for (row = 0; row < num_rows; row++) {
     inptr = input_buf[row];
     outptr = output_buf[row];
@@ -975,8 +972,6 @@ pass2_fs_dither (j_decompress_ptr cinfo,
   JSAMPROW colormap2 = cinfo->colormap[2];
   SHIFT_TEMPS
 
-  printf("mrt pass2 fs dither range: %3d, %3d, %3d, error: %d, sizeof(cur0): %ld\n", range_limit[0],
-    range_limit[10], range_limit[30], error_limit[17], sizeof(cur0) );
   for (row = 0; row < num_rows; row++) {
     inptr = input_buf[row];
     outptr = output_buf[row];
@@ -1010,12 +1005,9 @@ pass2_fs_dither (j_decompress_ptr cinfo,
        * for either sign of the error value.
        * Note: errorptr points to *previous* column's array entry.
        */
-      printf(" p0=(%3d, %3d, %3d) err=(%3d, %3d, %3d)", cur0, cur1, cur2,
-          errorptr[dir3+0], errorptr[dir3+1], errorptr[dir3+2] );
       cur0 = RIGHT_SHIFT(cur0 + errorptr[dir3+0] + 8, 4);
       cur1 = RIGHT_SHIFT(cur1 + errorptr[dir3+1] + 8, 4);
       cur2 = RIGHT_SHIFT(cur2 + errorptr[dir3+2] + 8, 4);
-      printf(" p1=(%3d, %3d, %3d)", cur0, cur1, cur2);
       /* Limit the error using transfer function set by init_error_limit.
        * See comments with init_error_limit for rationale.
        */
@@ -1034,7 +1026,6 @@ pass2_fs_dither (j_decompress_ptr cinfo,
       cur2 = GETJSAMPLE(range_limit[cur2]);
       /* Index into the cache with adjusted pixel value */
       cachep = & histogram[cur0>>C0_SHIFT][cur1>>C1_SHIFT][cur2>>C2_SHIFT];
-      printf(" p5=(%d, %d, %d)", (cur0>>C0_SHIFT), (cur1>>C1_SHIFT), (cur2>>C2_SHIFT));
       /* If we have not seen this color before, find nearest colormap */
       /* entry and update the cache */
       if (*cachep == 0)
@@ -1042,54 +1033,43 @@ pass2_fs_dither (j_decompress_ptr cinfo,
       /* Now emit the colormap index for this cell */
       { register int pixcode = *cachep - 1;
 	*outptr = (JSAMPLE) pixcode;
-        printf(" c:%4d (%3d %3d %3d) %3d", col, GETJSAMPLE(inptr[0]),GETJSAMPLE(inptr[1]),
-           GETJSAMPLE(inptr[2]), *outptr);
 	/* Compute representation error for this pixel */
 	cur0 -= GETJSAMPLE(colormap0[pixcode]);
 	cur1 -= GETJSAMPLE(colormap1[pixcode]);
 	cur2 -= GETJSAMPLE(colormap2[pixcode]);
-        printf(" p6=(%3d, %3d, %3d)", cur0, cur1, cur2);
       }
       /* Compute error fractions to be propagated to adjacent pixels.
        * Add these into the running sums, and simultaneously shift the
        * next-line error sums left by 1 column.
        */
       { register LOCFSERROR bnexterr, delta;
+	/* mrt: this block does not compile correctly on Visual Studio 10 C/C++ 16.00 32bit
+           with optimization turned on. */
 
 	bnexterr = cur0;	/* Process component 0 */
 	delta = cur0 * 2;
 	cur0 += delta;		/* form error * 3 */
-        printf(" 3*cur0=%d", cur0);
 	errorptr[0] = (FSERROR) (bpreverr0 + cur0);
 	cur0 += delta;		/* form error * 5 */
-        printf(" 5*cur0=%d", cur0);
 	bpreverr0 = belowerr0 + cur0;
 	belowerr0 = bnexterr;
 	cur0 += delta;		/* form error * 7 */
-        printf(" 7*cur0=%d", cur0);
 	bnexterr = cur1;	/* Process component 1 */
 	delta = cur1 * 2;
 	cur1 += delta;		/* form error * 3 */
-        printf(" 3*cur0=%d", cur1);
 	errorptr[1] = (FSERROR) (bpreverr1 + cur1);
 	cur1 += delta;		/* form error * 5 */
-        printf(" 3*cur0=%d", cur1);
 	bpreverr1 = belowerr1 + cur1;
 	belowerr1 = bnexterr;
 	cur1 += delta;		/* form error * 7 */
-        printf(" 3*cur0=%d", cur1);
 	bnexterr = cur2;	/* Process component 2 */
 	delta = cur2 * 2;
 	cur2 += delta;		/* form error * 3 */
-        printf(" 3*cur0=%d", cur2);
 	errorptr[2] = (FSERROR) (bpreverr2 + cur2);
 	cur2 += delta;		/* form error * 5 */
-        printf(" 3*cur0=%d", cur2);
 	bpreverr2 = belowerr2 + cur2;
 	belowerr2 = bnexterr;
 	cur2 += delta;		/* form error * 7 */
-        printf(" p7=(%3d %3d %3d)", cur0, cur1, cur2);
-        printf(" bpreverr=(%3d %3d %3d)\n", bpreverr0, bpreverr1, bpreverr2);
       }
       /* At this point curN contains the 7/16 error value to be propagated
        * to the next pixel on the current line, and all the errors for the
@@ -1107,7 +1087,6 @@ pass2_fs_dither (j_decompress_ptr cinfo,
     errorptr[1] = (FSERROR) bpreverr1;
     errorptr[2] = (FSERROR) bpreverr2;
   }
-  printf("\nerrors: %4d %4d %4d\n", errorptr[0], errorptr[1],errorptr[2]);
 }
 
 
@@ -1300,7 +1279,6 @@ jinit_2pass_quantizer (j_decompress_ptr cinfo)
   if (cinfo->enable_2pass_quant) {
     /* Make sure color count is acceptable */
     int desired = cinfo->desired_number_of_colors;
-    printf("mrt jinit_2pass_quant\n");
     /* Lower bound on # of colors ... somewhat arbitrary as long as > 0 */
     if (desired < 8)
       ERREXIT1(cinfo, JERR_QUANT_FEW_COLORS, 8);

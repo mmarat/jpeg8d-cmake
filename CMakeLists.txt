@@ -258,6 +258,13 @@ if( CMAKE_COMPILER_IS_GNUCC )
 
 	# linker flag  for Clang and GCC
 	check_c_compiler_flag("-no-undefined" gcc_no_undefined)
+elseif( MSVC )
+	message(STATUS "Microsoft C/C++")
+	if( ${MSVC_VERSION} == 1600 )
+		message(STATUS "Broken Microsoft Visual Studio 10  C/C++ 16.00 ? Disabling optimization flags.")
+		# should try to disable it only for jquant2.c
+		set(CMAKE_C_FLAGS_RELEASE "")
+	endif()
 else()
 	message(STATUS "not GCC")
 endif()
@@ -336,6 +343,8 @@ set(TESTFILES testorig.jpg testimg.ppm testimg.bmp testimg.jpg testprog.jpg
 set(jpeg_LIB_SRCS ${LIBSOURCES})
 
 if( WIN32 )
+	# there are no dllexport in the source, and no .def file yet
+	# so .dll would not work
 	add_library(jpeg STATIC ${jpeg_LIB_SRCS})
 else()
 	add_library(jpeg SHARED ${jpeg_LIB_SRCS})
