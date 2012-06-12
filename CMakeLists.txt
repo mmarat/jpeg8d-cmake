@@ -421,6 +421,26 @@ target_link_libraries(wrjpgcom )
 ########## setup configuration headers ###########
 get_target_property(jpeg_LINK_FLAGS jpeg LINK_FLAGS)
 
+exec_program(
+    "git"
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ARGS "describe"
+    OUTPUT_VARIABLE GIT_DESCRIBE )
+
+exec_program(
+    "git"
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ARGS "rev-parse -q --short HEAD"
+    OUTPUT_VARIABLE GIT_REV_PARSE )
+
+
+# string( REGEX MATCH "-g.*$" VERSION_SHA1 ${GIT_DESCRIBE} )
+# string( REGEX REPLACE "[-g]" "" VERSION_SHA1 ${VERSION_SHA1} )
+
+# add_definitions( -DGIT_SHA1="${VERSION_SHA1}" )
+message(STATUS "jpeg git DESCRIBE: ${GIT_DESCRIBE}")
+message(STATUS "jpeg git REV-PARSE: ${GIT_REV_PARSE}")
+
 configure_file(jconfig-cmake.cfg jconfig.h)
 configure_file(cmake-flags.h.in cmake-flags.h)
 
