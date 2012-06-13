@@ -945,6 +945,15 @@ pass2_no_dither (j_decompress_ptr cinfo,
   }
 }
 
+#ifdef _MSC_VER
+#if _MSC_VER == 1600
+/* disable optimization for pass2_fs_dither
+   The problem happens with the following compiler, both 32 and 64 bit:
+   Microsoft (R) C/C++ Optimizing Compiler Version 16.00.30319.01 for 80x86
+ */
+#pragma optimize( "2", off )
+#endif
+#endif
 
 METHODDEF(void)
 pass2_fs_dither (j_decompress_ptr cinfo,
@@ -1088,7 +1097,12 @@ pass2_fs_dither (j_decompress_ptr cinfo,
     errorptr[2] = (FSERROR) bpreverr2;
   }
 }
-
+#ifdef _MSC_VER
+#if _MSC_VER == 1600
+/* re-enable optimizations to those specified wiht /O compiler option */
+#pragma optimize( "", on )
+#endif
+#endif
 
 /*
  * Initialize the error-limiting transfer function (lookup table).

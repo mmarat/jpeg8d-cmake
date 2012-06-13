@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.8)
+cmake_minimum_required(VERSION 2.8.7)
 project(jpeg C)
 set(srcdir ${jpeg_SOURCE_DIR})
 
@@ -262,7 +262,21 @@ elseif( MSVC )
 	message(STATUS "Microsoft C/C++")
 	add_definitions("-D_CRT_SECURE_NO_WARNINGS") # disable non-secure API warnings
 else()
-	message(STATUS "not GCC")
+	# per cmake 2.8.8 documentation the following is not portable
+	message(STATUS "C Compiler guessed by cmake: ${CMAKE_C_COMPILER_ID}")
+	if( CMAKE_C_COMPILER_ID MATCHES "Intel" )
+		check_c_compiler_flag(-Wall intel_Wall)
+		if( intel_Wall )
+			set(CWARNFLAGS ${CWARNFLAGS} -Wall)
+		endif()
+	elseif( CMAKE_C_COMPILER_ID MATCHES "Clang" )
+		check_c_compiler_flag(-Wall clang_Wall)
+		if( clang_Wall )
+			set(CWARNFLAGS ${CWARNFLAGS} -Wall)
+		endif()
+	else()
+		message(STATUS "Not supported compiler. No extra flags set.")
+	endif()
 endif()
 
 set( CMAKE_C_FLAGS ${CMAKE_C_FLAGS} ${CWARNFLAGS} )
@@ -337,9 +351,12 @@ set(TESTFILES testorig.jpg testimg.ppm testimg.bmp testimg.jpg testprog.jpg
         testimgp.jpg)
 
 # workaround for MSVC optimization bug
-add_subdirectory(jquant2)
+# this solution requires cmake 2.8.8, released in Apr 2012
+# so at the moment using #pragma optimize in jquant2.c
+# add_subdirectory(jquant2)
+# set(jpeg_LIB_SRCS ${LIBSOURCES} $<TARGET_OBJECTS:jquant2> )
 
-set(jpeg_LIB_SRCS ${LIBSOURCES} $<TARGET_OBJECTS:jquant2> )
+set(jpeg_LIB_SRCS ${LIBSOURCES} jquant2.c )
 
 if( WIN32 )
 	# there are no dllexport in the source, and no .def file yet
@@ -432,7 +449,6 @@ message(STATUS "jpeg LINK FLAGS: ${jpeg_LINK_FLAGS}")
 
 find_package(Git)
 if( GIT_FOUND )
-	message(STATUS "git: ${GIT_EXECUTABLE}")
 	exec_program(
 	    "${GIT_EXECUTABLE}"
 	    ${CMAKE_CURRENT_SOURCE_DIR}
@@ -443,6 +459,11 @@ if( GIT_FOUND )
 	    ${CMAKE_CURRENT_SOURCE_DIR}
 	    ARGS "rev-parse -q --short HEAD"
 	    OUTPUT_VARIABLE GIT_REV_PARSE )
+	exec_program(
+	    "${GIT_EXECUTABLE}"
+	    ${CMAKE_CURRENT_SOURCE_DIR}
+	    ARGS "show -s --format=\"%ci\" HEAD"
+	    OUTPUT_VARIABLE GIT_SHOW_DATE )
 	# git show -s --format="%ci" HEAD # shows date
 	# string( REGEX MATCH "-g.*$" VERSION_SHA1 ${GIT_DESCRIBE} )
 	# string( REGEX REPLACE "[-g]" "" VERSION_SHA1 ${VERSION_SHA1} )
@@ -450,7 +471,7 @@ if( GIT_FOUND )
 	# add_definitions( -DGIT_SHA1="${VERSION_SHA1}" )
 	message(STATUS "jpeg git DESCRIBE: ${GIT_DESCRIBE}")
 	message(STATUS "jpeg git REV-PARSE: ${GIT_REV_PARSE}")
-
+	message(STATUS "jpeg git SHOW-DATE: ${GIT_SHOW_DATE}")
 else()
     message(STATUS "git NOT FOUND")
 endif()
