@@ -951,7 +951,7 @@ pass2_no_dither (j_decompress_ptr cinfo,
    The problem happens with the following compiler, both 32 and 64 bit:
    Microsoft (R) C/C++ Optimizing Compiler Version 16.00.30319.01 for 80x86
  */
-#pragma message("Disabling optimizations for pass2_fs_dither")
+#pragma message("WARNING: Disabling optimizations for pass2_fs_dither")
 #pragma optimize( "", off )
 #endif
 #endif

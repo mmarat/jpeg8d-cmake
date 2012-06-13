@@ -36,6 +36,14 @@ if( NOT HAVE_SIZE_T )
 endif()
 check_type_size("unsigned char" UNSIGNED_CHAR)
 check_type_size("unsigned short" UNSIGNED_SHORT)
+check_type_size(char CHAR)
+if( NOT HAVE_CHAR )
+	message(ERROR "Major BUG: no 'char' in C.")
+endif()
+if( NOT (CHAR EQUAL 1) )
+	message(WARNING  "Hmm, it seems char is not eight bits wide on your machine. "
+	    "I fear the JPEG software will not work at all.")
+endif()
 
 check_symbol_exists(tmpfile stdio.h HAVE_TMPFILE_SYMBOL)
 check_function_exists(tmpfile HAVE_TMPFILE_FUNC)
@@ -169,19 +177,23 @@ int is_char_signed (int arg)
     ;
     /* Hmm, it seems char is not eight bits wide on your machine */
     /* I fear the JPEG software will not work at all. */
+    return 0; /* treating it as unsigned */
   }
   return 1;			/* assume char is signed otherwise */
 }
 char signed_char_check = (char) (-67);
 int main() {
-  exit(is_char_signed((int) signed_char_check));
+  exit(!is_char_signed((int) signed_char_check)); /* exit() is in stdlib.h */
 }
 "
-CHAR_IS_UNSIGNED
+CHAR_IS_SIGNED
 )
-if( NOT CHAR_IS_UNSIGNED )
-	message(WARNING "Assuming that char is signed on target machine.
-	    If it is unsigned, this will be a little bit inefficient.")
+if( CHAR_IS_SIGNED )
+	message(STATUS "Assuming that char is signed on target machine. "
+	    "If it is unsigned, this will be a little bit inefficient.")
+else()
+	message(WARNING "Assuming that char is UNsigned on target machine.")
+	set(CHAR_IS_UNSIGNED 1)
 endif()
 
 # checking to see if right shift is signed
@@ -207,15 +219,16 @@ int is_shifting_signed (long arg)
   return 0;			/* try it with unsigned anyway */
 }
 int main() {
-  exit(is_shifting_signed(-0x7F7E80B1L));
+  exit(!is_shifting_signed(-0x7F7E80B1L)); /* exit() is in stdlib.h */
 }
 "
-RIGHT_SHIFT_IS_UNSIGNED
+RIGHT_SHIFT_IS_SIGNED
 )
-if( RIGHT_SHIFT_IS_UNSIGNED )
-	message(WARNING "Broken compiler shifts signed values as an unsigned shift.")
-else()
+if( RIGHT_SHIFT_IS_SIGNED )
 	message(STATUS "Assuming that right shift is signed on target machine.")
+else()
+	set(RIGHT_SHIFT_IS_UNSIGNED 1)
+	message(WARNING "Broken compiler shifts signed values as an unsigned shift.")
 endif()
 
 # checking to see if fopen accepts b spec
@@ -232,6 +245,7 @@ HAVE_B_MODE_IN_FOPEN
 )
 if( NOT HAVE_B_MODE_IN_FOPEN )
 	set(DONT_USE_B_MODE 1)
+	message(WARNING "Do not have 'b' mode in fopen")
 endif()
 
 
