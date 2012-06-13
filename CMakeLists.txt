@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 2.8.8)
 project(jpeg C)
 set(srcdir ${jpeg_SOURCE_DIR})
 
@@ -261,12 +261,6 @@ if( CMAKE_COMPILER_IS_GNUCC )
 elseif( MSVC )
 	message(STATUS "Microsoft C/C++")
 	add_definitions("-D_CRT_SECURE_NO_WARNINGS") # disable non-secure API warnings
-	if( MSVC_VERSION EQUAL 1600 )
-		message(STATUS "Broken Microsoft Visual Studio 10  C/C++ 16.00 ? Disabling optimization flags.")
-		# default by cmake: /MD /O2 /Ob2 /D NDEBUG
-		# should try to disable it only for jquant2.c
-		set(CMAKE_C_FLAGS_RELEASE "/Ox /MD /D NDEBUG")
-	endif()
 else()
 	message(STATUS "not GCC")
 endif()
@@ -288,7 +282,7 @@ set(LIBSOURCES
         jddctmgr.c jdhuff.c jdinput.c jdmainct.c jdmarker.c jdmaster.c
         jdmerge.c jdpostct.c jdsample.c jdtrans.c jerror.c jfdctflt.c
         jfdctfst.c jfdctint.c jidctflt.c jidctfst.c jidctint.c jquant1.c
-        jquant2.c jutils.c jmemmgr.c ${MEMORYMGR}.c
+        jutils.c jmemmgr.c ${MEMORYMGR}.c
 )
 
 # System dependent sources
@@ -342,8 +336,10 @@ set(OTHERFILES jconfig.txt ckconfig.c ansi2knr.c ansi2knr.1 jmemdosa.asm
 set(TESTFILES testorig.jpg testimg.ppm testimg.bmp testimg.jpg testprog.jpg
         testimgp.jpg)
 
+# workaround for MSVC optimization bug
+add_subdirectory(jquant2)
 
-set(jpeg_LIB_SRCS ${LIBSOURCES})
+set(jpeg_LIB_SRCS ${LIBSOURCES} $<TARGET_OBJECTS:jquant2> )
 
 if( WIN32 )
 	# there are no dllexport in the source, and no .def file yet
@@ -438,15 +434,16 @@ find_package(Git)
 if( GIT_FOUND )
 	message(STATUS "git: ${GIT_EXECUTABLE}")
 	exec_program(
-	    "git"
+	    "${GIT_EXECUTABLE}"
 	    ${CMAKE_CURRENT_SOURCE_DIR}
 	    ARGS "describe"
 	    OUTPUT_VARIABLE GIT_DESCRIBE )
 	exec_program(
-	    "git"
+	    "${GIT_EXECUTABLE}"
 	    ${CMAKE_CURRENT_SOURCE_DIR}
 	    ARGS "rev-parse -q --short HEAD"
 	    OUTPUT_VARIABLE GIT_REV_PARSE )
+	# git show -s --format="%ci" HEAD # shows date
 	# string( REGEX MATCH "-g.*$" VERSION_SHA1 ${GIT_DESCRIBE} )
 	# string( REGEX REPLACE "[-g]" "" VERSION_SHA1 ${VERSION_SHA1} )
 
