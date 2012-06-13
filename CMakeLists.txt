@@ -265,7 +265,7 @@ elseif( MSVC )
 		message(STATUS "Broken Microsoft Visual Studio 10  C/C++ 16.00 ? Disabling optimization flags.")
 		# default by cmake: /MD /O2 /Ob2 /D NDEBUG
 		# should try to disable it only for jquant2.c
-		set(CMAKE_C_FLAGS_RELEASE "/MD /D NDEBUG")
+		set(CMAKE_C_FLAGS_RELEASE "/O2 /MD /D NDEBUG")
 	endif()
 else()
 	message(STATUS "not GCC")
@@ -434,25 +434,30 @@ target_link_libraries(wrjpgcom )
 get_target_property(jpeg_LINK_FLAGS jpeg LINK_FLAGS)
 message(STATUS "jpeg LINK FLAGS: ${jpeg_LINK_FLAGS}")
 
-exec_program(
-    "git"
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ARGS "describe"
-    OUTPUT_VARIABLE GIT_DESCRIBE )
+find_package(Git)
+if( GIT_FOUND )
+	message(STATUS "git: ${GIT_EXECUTABLE}")
+	exec_program(
+	    "git"
+	    ${CMAKE_CURRENT_SOURCE_DIR}
+	    ARGS "describe"
+	    OUTPUT_VARIABLE GIT_DESCRIBE )
+	exec_program(
+	    "git"
+	    ${CMAKE_CURRENT_SOURCE_DIR}
+	    ARGS "rev-parse -q --short HEAD"
+	    OUTPUT_VARIABLE GIT_REV_PARSE )
+	# string( REGEX MATCH "-g.*$" VERSION_SHA1 ${GIT_DESCRIBE} )
+	# string( REGEX REPLACE "[-g]" "" VERSION_SHA1 ${VERSION_SHA1} )
 
-exec_program(
-    "git"
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ARGS "rev-parse -q --short HEAD"
-    OUTPUT_VARIABLE GIT_REV_PARSE )
+	# add_definitions( -DGIT_SHA1="${VERSION_SHA1}" )
+	message(STATUS "jpeg git DESCRIBE: ${GIT_DESCRIBE}")
+	message(STATUS "jpeg git REV-PARSE: ${GIT_REV_PARSE}")
 
+else()
+    message(STATUS "git NOT FOUND")
+endif()
 
-# string( REGEX MATCH "-g.*$" VERSION_SHA1 ${GIT_DESCRIBE} )
-# string( REGEX REPLACE "[-g]" "" VERSION_SHA1 ${VERSION_SHA1} )
-
-# add_definitions( -DGIT_SHA1="${VERSION_SHA1}" )
-message(STATUS "jpeg git DESCRIBE: ${GIT_DESCRIBE}")
-message(STATUS "jpeg git REV-PARSE: ${GIT_REV_PARSE}")
 
 configure_file(jconfig-cmake.cfg jconfig.h)
 configure_file(cmake-flags.h.in cmake-flags.h)
