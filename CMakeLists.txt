@@ -18,6 +18,53 @@ include (CheckCSourceCompiles)
 include (CheckCSourceRuns)
 include (CheckCCompilerFlag)
 
+# compiler flags should be set before any HAVE_ checks
+if( CMAKE_COMPILER_IS_GNUCC )
+	check_c_compiler_flag(-Wall  gcc_Wall)
+	if( gcc_Wall )
+		set(CWARNFLAGS ${CWARNFLAGS} -Wall)
+	endif()
+	# jcmainct.c fails check_c_compiler_flag("${CWARNFLAGS} -Werror" gcc_Werror)
+	# if( gcc_Werror )
+	#	set(CWARNFLAGS "${CWARNFLAGS} -Werror")
+	#endif()
+	check_c_compiler_flag("${CWARNFLAGS} -Wno-obsolete" gcc_Wno_obsolete)
+	if( gcc_Wno_obsolete )
+		set(CWARNFLAGS "${CWARNFLAGS} -Wno-obsolete")
+	endif()
+	# TODO: need to create temporary empty conftest.map
+	# check_c_compiler_flag("-Wl,--version-script=conftest.map" gcc_Wl_version_script)
+	check_c_compiler_flag("-Wl,--version-script" gcc_Wl_version_script)
+
+	# linker flag  for Clang and GCC
+	check_c_compiler_flag("-no-undefined" gcc_no_undefined)
+elseif( MSVC )
+	message(STATUS "Microsoft C/C++")
+	add_definitions("-D_CRT_SECURE_NO_WARNINGS") # disable non-secure API warnings
+else()
+	# per cmake 2.8.8 documentation the following is not portable
+	message(STATUS "C Compiler guessed by cmake: ${CMAKE_C_COMPILER_ID}")
+	if( CMAKE_C_COMPILER_ID MATCHES "Intel" )
+		check_c_compiler_flag(-Wall intel_Wall)
+		if( intel_Wall )
+			set(CWARNFLAGS ${CWARNFLAGS} -Wall)
+		endif()
+	elseif( CMAKE_C_COMPILER_ID MATCHES "Clang" )
+		check_c_compiler_flag(-Wall clang_Wall)
+		if( clang_Wall )
+			set(CWARNFLAGS ${CWARNFLAGS} -Wall)
+		endif()
+	else()
+		message(STATUS "Not supported compiler. No extra flags set.")
+	endif()
+endif()
+
+set( CMAKE_C_FLAGS ${CMAKE_C_FLAGS} ${CWARNFLAGS} )
+message(STATUS "jpeg C Flags: ${CMAKE_C_FLAGS}")
+message(STATUS "jpeg RELEASE C Flags: ${CMAKE_C_FLAGS_RELEASE}")
+
+
+
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 check_include_file(stddef.h HAVE_STDDEF_H)
@@ -253,50 +300,6 @@ endif()
 message(STATUS "sizeof( void* ) == ${CMAKE_SIZEOF_VOID_P}")
 message(STATUS "BUILD TYPE: ${CMAKE_BUILD_TYPE}")
 
-if( CMAKE_COMPILER_IS_GNUCC )
-	check_c_compiler_flag(-Wall  gcc_Wall)
-	if( gcc_Wall )
-		set(CWARNFLAGS ${CWARNFLAGS} -Wall)
-	endif()
-	# jcmainct.c fails check_c_compiler_flag("${CWARNFLAGS} -Werror" gcc_Werror)
-	# if( gcc_Werror )
-	#	set(CWARNFLAGS "${CWARNFLAGS} -Werror")
-	#endif()
-	check_c_compiler_flag("${CWARNFLAGS} -Wno-obsolete" gcc_Wno_obsolete)
-	if( gcc_Wno_obsolete )
-		set(CWARNFLAGS "${CWARNFLAGS} -Wno-obsolete")
-	endif()
-	# TODO: need to create temporary empty conftest.map
-	# check_c_compiler_flag("-Wl,--version-script=conftest.map" gcc_Wl_version_script)
-	check_c_compiler_flag("-Wl,--version-script" gcc_Wl_version_script)
-
-	# linker flag  for Clang and GCC
-	check_c_compiler_flag("-no-undefined" gcc_no_undefined)
-elseif( MSVC )
-	message(STATUS "Microsoft C/C++")
-	add_definitions("-D_CRT_SECURE_NO_WARNINGS") # disable non-secure API warnings
-else()
-	# per cmake 2.8.8 documentation the following is not portable
-	message(STATUS "C Compiler guessed by cmake: ${CMAKE_C_COMPILER_ID}")
-	if( CMAKE_C_COMPILER_ID MATCHES "Intel" )
-		check_c_compiler_flag(-Wall intel_Wall)
-		if( intel_Wall )
-			set(CWARNFLAGS ${CWARNFLAGS} -Wall)
-		endif()
-	elseif( CMAKE_C_COMPILER_ID MATCHES "Clang" )
-		check_c_compiler_flag(-Wall clang_Wall)
-		if( clang_Wall )
-			set(CWARNFLAGS ${CWARNFLAGS} -Wall)
-		endif()
-	else()
-		message(STATUS "Not supported compiler. No extra flags set.")
-	endif()
-endif()
-
-set( CMAKE_C_FLAGS ${CMAKE_C_FLAGS} ${CWARNFLAGS} )
-message(STATUS "jpeg C Flags: ${CMAKE_C_FLAGS}")
-message(STATUS "jpeg RELEASE C Flags: ${CMAKE_C_FLAGS_RELEASE}")
-
 get_directory_property(jpeg_COMPILE_DEFINITIONS COMPILE_DEFINITIONS)
 message(STATUS "jpeg C Definitions: ${jpeg_COMPILE_DEFINITIONS}")
 
@@ -378,9 +381,13 @@ if( WIN32 )
 	add_library(jpeg STATIC ${jpeg_LIB_SRCS})
 else()
 	add_library(jpeg SHARED ${jpeg_LIB_SRCS})
+	add_library(jpeg-static STATIC ${jpeg_LIB_SRCS})
+	set_target_properties(jpeg-static PROPERTIES OUTPUT_NAME jpeg)
 endif()
 
 set_target_properties(jpeg PROPERTIES VERSION 8.4.0 SOVERSION 8)
+set_target_properties(jpeg-static PROPERTIES VERSION 8.4.0 SOVERSION 8)
+
 if(gcc_Wl_version_script)
 	# TODO: this does not seem necessary as libjpeg.map is basically empty
 	set_target_properties(jpeg PROPERTIES LINK_FLAGS "-Wl,--version-script=${srcdir}/libjpeg.map")
