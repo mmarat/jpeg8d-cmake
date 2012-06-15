@@ -383,10 +383,10 @@ else()
 	add_library(jpeg SHARED ${jpeg_LIB_SRCS})
 	add_library(jpeg-static STATIC ${jpeg_LIB_SRCS})
 	set_target_properties(jpeg-static PROPERTIES OUTPUT_NAME jpeg)
+	set_target_properties(jpeg-static PROPERTIES VERSION 8.4.0 SOVERSION 8)
 endif()
 
 set_target_properties(jpeg PROPERTIES VERSION 8.4.0 SOVERSION 8)
-set_target_properties(jpeg-static PROPERTIES VERSION 8.4.0 SOVERSION 8)
 
 if(gcc_Wl_version_script)
 	# TODO: this does not seem necessary as libjpeg.map is basically empty
