@@ -508,15 +508,12 @@ export(TARGETS jpeg FILE jpeg-targets.cmake )
 ########### install files ###############
 
 install(TARGETS jpeg cjpeg djpeg jpegtran rdjpgcom wrjpgcom 
-  LIBRARY DESTINATION lib
-  ARCHIVE DESTINATION lib
-  RUNTIME DESTINATION bin)
+  LIBRARY DESTINATION lib COMPONENT Runtime
+  ARCHIVE DESTINATION lib COMPONENT Runtime
+  RUNTIME DESTINATION bin COMPONENT Runtime)
 
-install(FILES  ${INSTINCLUDES} DESTINATION include)
+install(FILES  ${INSTINCLUDES} DESTINATION include COMPONENT Development)
 # install(EXPORT jpeg DESTINATION cmake/jpeg)
-
-include(InstallRequiredSystemLibraries)
-include(CPack)
 
 
 ################### TESTS
@@ -546,3 +543,5 @@ add_test(NAME jpegtran-test1 COMMAND $<TARGET_FILE:jpegtran> -outfile testoutt.j
 add_test(jpegtran-diff-test1 ${CMAKE_COMMAND} -E compare_files ${srcdir}/testorig.jpg testoutt.jpg)
 set_tests_properties(jpegtran-diff-test1 PROPERTIES DEPENDS jpegtran-test1)
 
+include(InstallRequiredSystemLibraries)
+include(CPack)
