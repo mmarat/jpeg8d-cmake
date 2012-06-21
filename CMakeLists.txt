@@ -474,26 +474,25 @@ if( GIT_FOUND )
 	exec_program(
 	    "${GIT_EXECUTABLE}"
 	    ${CMAKE_CURRENT_SOURCE_DIR}
-	    ARGS "describe"
-	    OUTPUT_VARIABLE GIT_DESCRIBE )
+	    ARGS "show -s --format=\"%at\" HEAD"
+	    OUTPUT_VARIABLE GIT_UNIX_TIME_STAMP )
 	exec_program(
 	    "${GIT_EXECUTABLE}"
 	    ${CMAKE_CURRENT_SOURCE_DIR}
-	    ARGS "rev-parse -q --short HEAD"
-	    OUTPUT_VARIABLE GIT_REV_PARSE )
-	exec_program(
-	    "${GIT_EXECUTABLE}"
-	    ${CMAKE_CURRENT_SOURCE_DIR}
-	    ARGS "show -s --format=\"%ci\" HEAD"
+	    ARGS "show -s --format=\"%ai_%h\" HEAD"
 	    OUTPUT_VARIABLE GIT_SHOW_DATE )
-	# git show -s --format="%ci" HEAD # shows date
-	# string( REGEX MATCH "-g.*$" VERSION_SHA1 ${GIT_DESCRIBE} )
-	# string( REGEX REPLACE "[-g]" "" VERSION_SHA1 ${VERSION_SHA1} )
+	string(REGEX MATCH "[0-9][0-9]-[0-1][0-9]-[0-3][0-9] ..:..:.." GIT_STRIPPED_DATE ${GIT_SHOW_DATE})
+	string(REGEX REPLACE "[:-]" "" GIT_DATE_CODE ${GIT_STRIPPED_DATE})
+	string(REPLACE " " "-" GIT_DATE_CODE ${GIT_DATE_CODE})
 
-	# add_definitions( -DGIT_SHA1="${VERSION_SHA1}" )
-	message(STATUS "jpeg git DESCRIBE: ${GIT_DESCRIBE}")
-	message(STATUS "jpeg git REV-PARSE: ${GIT_REV_PARSE}")
 	message(STATUS "jpeg git SHOW-DATE: ${GIT_SHOW_DATE}")
+	message(STATUS "jpeg git stripped date: ${GIT_STRIPPED_DATE}")
+	message(STATUS "jpeg git date code: ${GIT_DATE_CODE}")
+	execute_process(
+	    COMMAND "${GIT_EXECUTABLE}" log  "--pretty=--- %ai %h%n%w(80)%B" HEAD
+	    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+	    OUTPUT_FILE "${jpeg_BINARY_DIR}/jpeg_ChangeLog.txt"
+	)
 else()
     message(STATUS "git NOT FOUND")
 endif()
