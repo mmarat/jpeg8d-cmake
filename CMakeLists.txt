@@ -65,7 +65,7 @@ message(STATUS "jpeg RELEASE C Flags: ${CMAKE_C_FLAGS_RELEASE}")
 
 
 
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
+include_directories(${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
 link_directories(${jpeg_BINARY_DIR})
 
 check_include_file(stddef.h HAVE_STDDEF_H)
