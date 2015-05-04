@@ -1,6 +1,7 @@
-cmake_minimum_required(VERSION 2.8.7)
-project(jpeg C)
+cmake_minimum_required(VERSION 3.0.0)
+project(jpeg VERSION 8.4 LANGUAGES C)
 set(srcdir ${jpeg_SOURCE_DIR})
+set(CMAKE_MACOSX_RPATH ON)
 
 #-----------------------------------------------------------------------------
 # Include all the necessary files for macros
@@ -323,7 +324,10 @@ set(SYSDEPSOURCES
 )
 
 # Headers which are installed to support the library
-set(INSTINCLUDES  jerror.h jmorecfg.h jpeglib.h)
+set(INSTINCLUDES  jerror.h jmorecfg.h jpeglib.h "${CMAKE_CURRENT_BINARY_DIR}/jconfig.h")
+set_source_files_properties("${CMAKE_CURRENT_BINARY_DIR}/jconfig.h"
+	PROPERTIES GENERATED TRUE)
+source_group(Interface FILES ${INSTINCLUDES})
 
 # Headers which are not installed
 set(OTHERINCLUDES cderror.h cdjpeg.h jdct.h jinclude.h jmemsys.h jpegint.h 
@@ -374,7 +378,7 @@ set(TESTFILES testorig.jpg testimg.ppm testimg.bmp testimg.jpg testprog.jpg
 # add_subdirectory(jquant2)
 # set(jpeg_LIB_SRCS ${LIBSOURCES} $<TARGET_OBJECTS:jquant2> )
 
-set(jpeg_LIB_SRCS ${LIBSOURCES} jquant2.c )
+set(jpeg_LIB_SRCS ${LIBSOURCES} jquant2.c ${INSTINCLUDES} ${OTHERINCLUDES})
 
 if( WIN32 )
 	# there are no dllexport in the source, and no .def file yet
@@ -387,7 +391,8 @@ else()
 	set_target_properties(jpeg-static PROPERTIES VERSION 8.4.0 SOVERSION 8)
 endif()
 
-set_target_properties(jpeg PROPERTIES VERSION 8.4.0 SOVERSION 8)
+set_target_properties(jpeg PROPERTIES VERSION 8.4.0 SOVERSION 8
+	PUBLIC_HEADER "${INSTINCLUDES}")
 
 if(gcc_Wl_version_script)
 	# TODO: this does not seem necessary as libjpeg.map is basically empty
@@ -508,12 +513,10 @@ export(TARGETS jpeg FILE jpeg-targets.cmake )
 
 install(TARGETS jpeg cjpeg djpeg jpegtran rdjpgcom wrjpgcom 
   LIBRARY DESTINATION lib COMPONENT Runtime
-  ARCHIVE DESTINATION lib COMPONENT Runtime
-  RUNTIME DESTINATION bin COMPONENT Runtime)
-
-install(FILES  ${INSTINCLUDES} DESTINATION include COMPONENT Development)
-# install(EXPORT jpeg DESTINATION cmake/jpeg)
-
+  ARCHIVE DESTINATION lib COMPONENT Development
+  RUNTIME DESTINATION bin COMPONENT Runtime
+  PUBLIC_HEADER DESTINATION include COMPONENT Development
+)
 
 ################### TESTS
 enable_testing()
