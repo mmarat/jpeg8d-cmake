@@ -1,0 +1,38 @@
+# Windows build free hosting service: appveyor.com
+version: 3.8.5.{build}
+
+environment:
+  P: "c:/projects/libs"
+
+# branches to build
+branches:
+  # whitelist
+  only:
+    - master
+
+# Operating system (build VM template)
+os: Windows Server 2012 R2
+
+# scripts that are called at very beginning, before repo cloning
+init:
+  - git config --global core.autocrlf input
+
+# clone directory
+clone_folder: c:\projects\jpeg_cmake
+
+platform: x64
+configuration: Release
+
+install:
+  # by default, all script lines are interpreted as batch
+
+build:
+  project: INSTALL.vcxproj      # path to Visual Studio solution or project
+
+# scripts to run before build
+before_build:
+  - echo Running cmake...
+  - mkdir c:\projects\jpeg_cmake_build
+  - cd c:\projects\jpeg_cmake_build
+  - cmake -G "Visual Studio 12 Win64" -DCMAKE_INSTALL_PREFIX=%P% c:\projects\jpeg_cmake
+
