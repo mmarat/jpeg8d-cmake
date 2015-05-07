@@ -1,0 +1,27 @@
+language: c
+
+compiler:
+  - gcc
+  - clang
+
+before_install:
+  - echo $LANG
+  - echo $LC_ALL
+  - echo $TRAVIS_OS_NAME
+
+before_script:
+  - mkdir buildx
+  - cd buildx
+  - cmake ..
+
+script: cmake --build . --config Release
+
+branches:
+  only:
+    - master
+
+os:
+  - linux
+  - osx
+
+osx_image: xcode61
