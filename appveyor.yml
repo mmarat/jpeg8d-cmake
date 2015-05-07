@@ -18,7 +18,7 @@ init:
   - git config --global core.autocrlf input
 
 # clone directory
-clone_folder: c:\projects\jpeg_cmake
+clone_folder: c:\projects\jpeg8d-cmake
 
 platform: x64
 configuration: Release
@@ -32,7 +32,6 @@ build:
 # scripts to run before build
 before_build:
   - echo Running cmake...
-  - mkdir c:\projects\jpeg_cmake_build
-  - cd c:\projects\jpeg_cmake_build
-  - cmake -G "Visual Studio 12 Win64" -DCMAKE_INSTALL_PREFIX=%P% c:\projects\jpeg_cmake
+  - cd c:\projects\jpeg8d-cmake
+  - cmake -G "Visual Studio 12 Win64" -DCMAKE_INSTALL_PREFIX=%P%
 
