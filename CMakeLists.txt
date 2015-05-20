@@ -23,12 +23,8 @@ include (CheckCCompilerFlag)
 if( CMAKE_COMPILER_IS_GNUCC )
 	check_c_compiler_flag(-Wall  gcc_Wall)
 	if( gcc_Wall )
-		set(CWARNFLAGS ${CWARNFLAGS} -Wall)
+		set(CWARNFLAGS "${CWARNFLAGS} -Wall")
 	endif()
-	# jcmainct.c fails check_c_compiler_flag("${CWARNFLAGS} -Werror" gcc_Werror)
-	# if( gcc_Werror )
-	#	set(CWARNFLAGS "${CWARNFLAGS} -Werror")
-	#endif()
 	check_c_compiler_flag("${CWARNFLAGS} -Wno-obsolete" gcc_Wno_obsolete)
 	if( gcc_Wno_obsolete )
 		set(CWARNFLAGS "${CWARNFLAGS} -Wno-obsolete")
@@ -48,23 +44,21 @@ else()
 	if( CMAKE_C_COMPILER_ID MATCHES "Intel" )
 		check_c_compiler_flag(-Wall intel_Wall)
 		if( intel_Wall )
-			set(CWARNFLAGS ${CWARNFLAGS} -Wall)
+			set(CWARNFLAGS "${CWARNFLAGS} -Wall")
 		endif()
 	elseif( CMAKE_C_COMPILER_ID MATCHES "Clang" )
 		check_c_compiler_flag(-Wall clang_Wall)
 		if( clang_Wall )
-			set(CWARNFLAGS ${CWARNFLAGS} -Wall)
+			set(CWARNFLAGS "${CWARNFLAGS} -Wall")
 		endif()
 	else()
 		message(STATUS "Not supported compiler. No extra flags set.")
 	endif()
 endif()
 
-set( CMAKE_C_FLAGS ${CMAKE_C_FLAGS} ${CWARNFLAGS} )
+set( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${CWARNFLAGS}" )
 message(STATUS "jpeg C Flags: ${CMAKE_C_FLAGS}")
 message(STATUS "jpeg RELEASE C Flags: ${CMAKE_C_FLAGS_RELEASE}")
-
-
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
 link_directories(${jpeg_BINARY_DIR})
@@ -80,7 +74,7 @@ endif()
 check_type_size(size_t SIZE_T)
 if( NOT HAVE_SIZE_T )
 	message(WARNING "Type size_t is not defined in any of the usual places.
-            Try putting 'typedef unsigned int size_t;' in jconfig.h."
+		Try putting 'typedef unsigned int size_t;' in jconfig.h."
 	)
 endif()
 check_type_size("unsigned char" UNSIGNED_CHAR)
@@ -91,7 +85,7 @@ if( NOT HAVE_CHAR )
 endif()
 if( NOT (CHAR EQUAL 1) )
 	message(WARNING  "Hmm, it seems char is not eight bits wide on your machine. "
-	    "I fear the JPEG software will not work at all.")
+		"I fear the JPEG software will not work at all.")
 endif()
 
 check_symbol_exists(tmpfile stdio.h HAVE_TMPFILE_SYMBOL)
@@ -111,14 +105,14 @@ set(MEMORYMGR jmemnobs)
 # See if compiler supports prototypes.
 check_c_source_compiles(
 "int testfunction (int arg1, int * arg2); /* check prototypes */
-struct methods_struct {		/* check method-pointer declarations */
+struct methods_struct { /* check method-pointer declarations */
   int (*error_exit) (char *msgtext);
   int (*trace_message) (char *msgtext);
   int (*another_method) (void);
 };
 int testfunction (int arg1, int * arg2) /* check definitions */
 { return arg2[arg1]; }
-int test2function (void)	/* check void arg list */
+int test2function (void) /* check void arg list */
 { return 0; }
 int main(int argc, char **argv) {return 0;}
 "
@@ -126,30 +120,30 @@ HAVE_PROTOTYPES
 )
 if( NOT HAVE_PROTOTYPES )
 	message(WARNING "Your compiler does not seem to know about function prototypes.
-    		Perhaps it needs a special switch to enable ANSI C mode.")
+		Perhaps it needs a special switch to enable ANSI C mode.")
 endif()
 
 # checking if C compiler has void type
 check_c_source_compiles(
 "/* Caution: a C++ compiler will insist on valid prototypes */
-typedef void * void_ptr;	/* check void * */
-#ifdef HAVE_PROTOTYPES		/* check ptr to function returning void */
+typedef void * void_ptr; /* check void * */
+#ifdef HAVE_PROTOTYPES /* check ptr to function returning void */
 typedef void (*void_func) (int a, int b);
 #else
 typedef void (*void_func) ();
 #endif
 
-#ifdef HAVE_PROTOTYPES		/* check void function result */
+#ifdef HAVE_PROTOTYPES /* check void function result */
 void test3function (void_ptr arg1, void_func arg2)
 #else
 void test3function (arg1, arg2)
-     void_ptr arg1;
-     void_func arg2;
+	void_ptr arg1;
+	void_func arg2;
 #endif
 {
   char * locptr = (char *) arg1; /* check casting to and from void * */
   arg1 = (void *) locptr;
-  (*arg2) (1, 2);		/* check call of fcn returning void */
+  (*arg2) (1, 2);  /* check call of fcn returning void */
 }
 int main() { return 0; }
 "
@@ -189,7 +183,7 @@ check_c_source_compiles(
 if( NOT HAVE_C_CONST )
 	message(WARNING "C compiler does not have 'const'. That is an archaic compiler, UPGRADE!")
 	set(CONST )
-endif()	
+endif()
 
 # We cannot check for bogus warnings, but at least we can check for errors
 check_c_source_compiles(
@@ -418,7 +412,6 @@ set(cjpeg_SRCS
 add_executable(cjpeg ${cjpeg_SRCS})
 
 target_link_libraries(cjpeg jpeg)
-
 
 
 ########### next target ###############
