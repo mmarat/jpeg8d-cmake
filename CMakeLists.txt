@@ -486,21 +486,28 @@ if( GIT_FOUND )
 	message(STATUS "jpeg git stripped date: ${GIT_STRIPPED_DATE}")
 	message(STATUS "jpeg git date code: ${GIT_DATE_CODE}")
 	execute_process(
-	    COMMAND "${GIT_EXECUTABLE}" log  "--pretty=--- %ai %h%n%w(80)%B" HEAD
-	    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-	    OUTPUT_FILE "${jpeg_BINARY_DIR}/jpeg_ChangeLog.txt"
+		COMMAND "${GIT_EXECUTABLE}" log  "--pretty=--- %ai %h%n%w(80)%B" HEAD
+		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+		OUTPUT_FILE "${jpeg_BINARY_DIR}/jpeg_ChangeLog.txt"
 	)
 else()
-    message(STATUS "git NOT FOUND")
+	message(STATUS "git NOT FOUND")
 endif()
 
 
 configure_file(jconfig-cmake.cfg jconfig.h)
 configure_file(cmake-flags.h.in cmake-flags.h)
 
-
 export(TARGETS jpeg FILE jpeg-targets.cmake )
-
+include(CMakePackageConfigHelpers)
+write_basic_package_version_file(
+	"${CMAKE_CURRENT_BINARY_DIR}/jpeg-config-version.cmake"
+	COMPATIBILITY AnyNewerVersion
+)
+configure_file(jpeg-config.cmake.in
+	"${CMAKE_CURRENT_BINARY_DIR}/jpeg-config.cmake"
+	COPYONLY
+)
 ########### install files ###############
 
 install(TARGETS jpeg cjpeg djpeg jpegtran rdjpgcom wrjpgcom
