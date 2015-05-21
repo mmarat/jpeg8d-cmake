@@ -57,8 +57,6 @@ else()
 endif()
 
 set( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${CWARNFLAGS}" )
-message(STATUS "jpeg C Flags: ${CMAKE_C_FLAGS}")
-message(STATUS "jpeg RELEASE C Flags: ${CMAKE_C_FLAGS_RELEASE}")
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
 link_directories(${jpeg_BINARY_DIR})
@@ -292,13 +290,6 @@ if( NOT HAVE_B_MODE_IN_FOPEN )
 endif()
 
 
-
-message(STATUS "sizeof( void* ) == ${CMAKE_SIZEOF_VOID_P}")
-message(STATUS "BUILD TYPE: ${CMAKE_BUILD_TYPE}")
-
-get_directory_property(jpeg_COMPILE_DEFINITIONS COMPILE_DEFINITIONS)
-message(STATUS "jpeg C Definitions: ${jpeg_COMPILE_DEFINITIONS}")
-
 ########### next target ###############
 ## Sources to build library
 set(LIBSOURCES
@@ -381,16 +372,23 @@ if( WIN32 )
 else()
 	add_library(jpeg SHARED ${jpeg_LIB_SRCS})
 	add_library(jpeg-static STATIC ${jpeg_LIB_SRCS})
-	set_target_properties(jpeg-static PROPERTIES OUTPUT_NAME jpeg)
+	set_target_properties(jpeg-static PROPERTIES OUTPUT_NAME jpeg FOLDER Libraries)
 	set_target_properties(jpeg-static PROPERTIES VERSION 8.4.0 SOVERSION 8)
+	target_include_directories(jpeg-static PUBLIC ${CMAKE_CURRENT_BINARY_DIR}
+		${CMAKE_CURRENT_SOURCE_DIR})
 endif()
 
 set_target_properties(jpeg PROPERTIES VERSION 8.4.0 SOVERSION 8
-	PUBLIC_HEADER "${INSTINCLUDES}")
+	PUBLIC_HEADER "${INSTINCLUDES}"
+	FOLDER Libraries
+)
+target_include_directories(jpeg PUBLIC ${CMAKE_CURRENT_BINARY_DIR}
+	${CMAKE_CURRENT_SOURCE_DIR})
 
 if(gcc_Wl_version_script)
 	# TODO: this does not seem necessary as libjpeg.map is basically empty
-	set_target_properties(jpeg PROPERTIES LINK_FLAGS "-Wl,--version-script=${srcdir}/libjpeg.map")
+	set_target_properties(jpeg PROPERTIES LINK_FLAGS
+		"-Wl,--version-script=${srcdir}/libjpeg.map")
 endif()
 if(gcc_no_undefined)
 	set_target_properties(jpeg PROPERTIES LINK_FLAGS "-no-undefined")
@@ -463,9 +461,10 @@ add_executable(wrjpgcom ${wrjpgcom_SRCS})
 
 target_link_libraries(wrjpgcom )
 
+set_target_properties(cjpeg djpeg jpegtran rdjpgcom wrjpgcom  PROPERTIES FOLDER
+	Executables)
+
 ########## setup configuration headers ###########
-get_target_property(jpeg_LINK_FLAGS jpeg LINK_FLAGS)
-message(STATUS "jpeg LINK FLAGS: ${jpeg_LINK_FLAGS}")
 
 find_package(Git)
 if( GIT_FOUND )
@@ -504,7 +503,7 @@ export(TARGETS jpeg FILE jpeg-targets.cmake )
 
 ########### install files ###############
 
-install(TARGETS jpeg cjpeg djpeg jpegtran rdjpgcom wrjpgcom 
+install(TARGETS jpeg cjpeg djpeg jpegtran rdjpgcom wrjpgcom
   LIBRARY DESTINATION lib COMPONENT Runtime
   ARCHIVE DESTINATION lib COMPONENT Development
   RUNTIME DESTINATION bin COMPONENT Runtime
