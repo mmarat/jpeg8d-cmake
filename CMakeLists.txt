@@ -504,10 +504,12 @@ write_basic_package_version_file(
 	"${CMAKE_CURRENT_BINARY_DIR}/jpeg-config-version.cmake"
 	COMPATIBILITY AnyNewerVersion
 )
-configure_file(jpeg-config.cmake.in
+
+configure_package_config_file(jpeg-config.cmake.in
 	"${CMAKE_CURRENT_BINARY_DIR}/jpeg-config.cmake"
-	COPYONLY
+	INSTALL_DESTINATION lib/jpeg/cmake
 )
+
 ########### install files ###############
 
 install(TARGETS jpeg cjpeg djpeg jpegtran rdjpgcom wrjpgcom
