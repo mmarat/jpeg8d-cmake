@@ -3,6 +3,21 @@ project(jpeg VERSION 8.4 LANGUAGES C)
 set(srcdir ${jpeg_SOURCE_DIR})
 set(CMAKE_MACOSX_RPATH ON)
 
+foreach(cfg Debug Release RelWithDebInfo MinSizeRel None)
+	string(TOUPPER "_${cfg}" cfgo)
+	if( "${cfg}" STREQUAL "Release" )
+		set(odir "${CMAKE_BINARY_DIR}")
+	elseif( "${cfg}" STREQUAL "None")
+		set(odir "${CMAKE_BINARY_DIR}")
+		set(cfgo "")
+	else()
+		set(odir "${CMAKE_BINARY_DIR}/${cfg}")
+	endif()
+	set(CMAKE_RUNTIME_OUTPUT_DIRECTORY${cfgo} "${odir}/bin")
+	set(CMAKE_LIBRARY_OUTPUT_DIRECTORY${cfgo} "${odir}/lib")
+	set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY${cfgo} "${odir}/lib")
+endforeach()
+
 #-----------------------------------------------------------------------------
 # Include all the necessary files for macros
 #-----------------------------------------------------------------------------
@@ -58,7 +73,6 @@ endif()
 
 set( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${CWARNFLAGS}" )
 
-include_directories(${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
 link_directories(${jpeg_BINARY_DIR})
 
 check_include_file(stddef.h HAVE_STDDEF_H)
@@ -206,26 +220,17 @@ if( NOT HAVE_LONG_EXTERNAL_NAMES )
 	set(NEED_SHORT_EXTERNAL_NAMES 1)
 endif()
 
+check_include_file(limits.h HAVE_LIMITS_H)
+if(NOT HAVE_LIMITS_H)
+	message(FATAL_ERROR "limits.h is missing")
+endif()
 # checking to see if char is signed
-check_c_source_runs(
-"
-int is_char_signed (int arg)
-{
-  if (arg == 189) {		/* expected result for unsigned char */
-    return 0;			/* type char is unsigned */
-  }
-  else if (arg != -67) {	/* expected result for signed char */
-    ;
-    /* Hmm, it seems char is not eight bits wide on your machine */
-    /* I fear the JPEG software will not work at all. */
-    return 0; /* treating it as unsigned */
-  }
-  return 1;			/* assume char is signed otherwise */
-}
-char signed_char_check = (char) (-67);
-int main() {
-  exit(!is_char_signed((int) signed_char_check)); /* exit() is in stdlib.h */
-}
+check_c_source_compiles(
+"#include <limits.h>
+#if CHAR_MIN >= 0
+#  error \"char is unsigned\"
+#endif
+int main() {return 0;}
 "
 CHAR_IS_SIGNED
 )
@@ -238,30 +243,13 @@ else()
 endif()
 
 # checking to see if right shift is signed
-check_c_source_runs(
-"
-int is_shifting_signed (long arg)
-/* See whether right-shift on a long is signed or not. */
-{
-  long res = arg >> 4;
-
-  if (res == -0x7F7E80CL) {	/* expected result for signed shift */
-    return 1;			/* right shift is signed */
-  }
-  /* see if unsigned-shift hack will fix it. */
-  /* we can't just test exact value since it depends on width of long... */
-  res |= (~0L) << (32-4);
-  if (res == -0x7F7E80CL) {	/* expected result now? */
-    return 0;			/* right shift is unsigned */
-  }
-  ;
-  /* Right shift isn't acting as I expect it to. */
-  /* I fear the JPEG software will not work at all. */
-  return 0;			/* try it with unsigned anyway */
-}
-int main() {
-  exit(!is_shifting_signed(-0x7F7E80B1L)); /* exit() is in stdlib.h */
-}
+check_c_source_compiles(
+"#define NTST1 -0x7F7E80CL
+#define NVAL -0x7F7E80B1L
+#if  ((NVAL)>>4) != NTST1
+#error \"right shift is unsigned\"
+#endif
+int main() {return 0;}
 "
 RIGHT_SHIFT_IS_SIGNED
 )
@@ -272,8 +260,9 @@ else()
 	message(WARNING "Broken compiler shifts signed values as an unsigned shift.")
 endif()
 
-# checking to see if fopen accepts b spec
-check_c_source_runs(
+# superficial check to see if fopen accepts b spec
+# assuming that it does, it is not used by the library anyway
+check_c_source_compiles(
 "
 #include <stdio.h>
 int main() {
@@ -293,14 +282,14 @@ endif()
 ########### next target ###############
 ## Sources to build library
 set(LIBSOURCES
-        jaricom.c jcapimin.c jcapistd.c jcarith.c jccoefct.c jccolor.c
-        jcdctmgr.c jchuff.c jcinit.c jcmainct.c jcmarker.c jcmaster.c
-        jcomapi.c jcparam.c jcprepct.c jcsample.c jctrans.c jdapimin.c
-        jdapistd.c jdarith.c jdatadst.c jdatasrc.c jdcoefct.c jdcolor.c
-        jddctmgr.c jdhuff.c jdinput.c jdmainct.c jdmarker.c jdmaster.c
-        jdmerge.c jdpostct.c jdsample.c jdtrans.c jerror.c jfdctflt.c
-        jfdctfst.c jfdctint.c jidctflt.c jidctfst.c jidctint.c jquant1.c
-        jutils.c jmemmgr.c ${MEMORYMGR}.c
+	jaricom.c jcapimin.c jcapistd.c jcarith.c jccoefct.c jccolor.c
+	jcdctmgr.c jchuff.c jcinit.c jcmainct.c jcmarker.c jcmaster.c
+	jcomapi.c jcparam.c jcprepct.c jcsample.c jctrans.c jdapimin.c
+	jdapistd.c jdarith.c jdatadst.c jdatasrc.c jdcoefct.c jdcolor.c
+	jddctmgr.c jdhuff.c jdinput.c jdmainct.c jdmarker.c jdmaster.c
+	jdmerge.c jdpostct.c jdsample.c jdtrans.c jerror.c jfdctflt.c
+	jfdctfst.c jfdctint.c jidctflt.c jidctfst.c jidctint.c jquant1.c
+	jutils.c jmemmgr.c ${MEMORYMGR}.c
 )
 
 # System dependent sources
@@ -309,14 +298,15 @@ set(SYSDEPSOURCES
 )
 
 # Headers which are installed to support the library
-set(INSTINCLUDES  jerror.h jmorecfg.h jpeglib.h "${CMAKE_CURRENT_BINARY_DIR}/jconfig.h")
+set(INSTINCLUDES  jerror.h jmorecfg.h jpeglib.h
+	"${CMAKE_CURRENT_BINARY_DIR}/jconfig.h")
 set_source_files_properties("${CMAKE_CURRENT_BINARY_DIR}/jconfig.h"
 	PROPERTIES GENERATED TRUE)
 source_group(Interface FILES ${INSTINCLUDES})
 
 # Headers which are not installed
 set(OTHERINCLUDES cderror.h cdjpeg.h jdct.h jinclude.h jmemsys.h jpegint.h 
-        jversion.h transupp.h
+	jversion.h transupp.h
 )
 
 # Manual pages (Automake uses 'MANS' for itself)
@@ -324,26 +314,26 @@ set(DISTMANS cjpeg.1 djpeg.1 jpegtran.1 rdjpgcom.1 wrjpgcom.1)
 
 # Other documentation files
 set(DOCS README install.txt usage.txt wizard.txt example.c libjpeg.txt
-        structure.txt coderules.txt filelist.txt change.log)
+	structure.txt coderules.txt filelist.txt change.log)
 
 # Makefiles for various systems
 set(MKFILES configure Makefile.in makefile.ansi makefile.unix makefile.bcc
-        makefile.mc6 makefile.dj makefile.wat makefile.vc makejdsw.vc6
-        makeadsw.vc6 makejdep.vc6 makejdsp.vc6 makejmak.vc6 makecdep.vc6
-        makecdsp.vc6 makecmak.vc6 makeddep.vc6 makeddsp.vc6 makedmak.vc6
-        maketdep.vc6 maketdsp.vc6 maketmak.vc6 makerdep.vc6 makerdsp.vc6
-        makermak.vc6 makewdep.vc6 makewdsp.vc6 makewmak.vc6 makejsln.v10
-        makeasln.v10 makejvcx.v10 makejfil.v10 makecvcx.v10 makecfil.v10
-        makedvcx.v10 makedfil.v10 maketvcx.v10 maketfil.v10 makervcx.v10
-        makerfil.v10 makewvcx.v10 makewfil.v10 makeproj.mac makcjpeg.st
-        makdjpeg.st makljpeg.st maktjpeg.st makefile.manx makefile.sas
-        makefile.mms makefile.vms makvms.opt
+	makefile.mc6 makefile.dj makefile.wat makefile.vc makejdsw.vc6
+	makeadsw.vc6 makejdep.vc6 makejdsp.vc6 makejmak.vc6 makecdep.vc6
+	makecdsp.vc6 makecmak.vc6 makeddep.vc6 makeddsp.vc6 makedmak.vc6
+	maketdep.vc6 maketdsp.vc6 maketmak.vc6 makerdep.vc6 makerdsp.vc6
+	makermak.vc6 makewdep.vc6 makewdsp.vc6 makewmak.vc6 makejsln.v10
+	makeasln.v10 makejvcx.v10 makejfil.v10 makecvcx.v10 makecfil.v10
+	makedvcx.v10 makedfil.v10 maketvcx.v10 maketfil.v10 makervcx.v10
+	makerfil.v10 makewvcx.v10 makewfil.v10 makeproj.mac makcjpeg.st
+	makdjpeg.st makljpeg.st maktjpeg.st makefile.manx makefile.sas
+	makefile.mms makefile.vms makvms.opt
 )
 
 # Configuration files
 set(CONFIGFILES jconfig.cfg jconfig.bcc jconfig.mc6 jconfig.dj jconfig.wat
-        jconfig.vc jconfig.mac jconfig.st jconfig.manx jconfig.sas
-        jconfig.vms
+	jconfig.vc jconfig.mac jconfig.st jconfig.manx jconfig.sas
+	jconfig.vms
 )
 
 # Support scripts for configure
@@ -351,11 +341,11 @@ set(CONFIGUREFILES config.guess config.sub install-sh ltmain.sh depcomp missing)
 
 # Miscellaneous support files
 set(OTHERFILES jconfig.txt ckconfig.c ansi2knr.c ansi2knr.1 jmemdosa.asm
-        libjpeg.map)
+	libjpeg.map)
 
 # Test support files
 set(TESTFILES testorig.jpg testimg.ppm testimg.bmp testimg.jpg testprog.jpg
-        testimgp.jpg)
+	testimgp.jpg)
 
 # workaround for MSVC optimization bug
 # this solution requires cmake 2.8.8, released in Apr 2012
@@ -374,16 +364,22 @@ else()
 	add_library(jpeg-static STATIC ${jpeg_LIB_SRCS})
 	set_target_properties(jpeg-static PROPERTIES OUTPUT_NAME jpeg FOLDER Libraries)
 	set_target_properties(jpeg-static PROPERTIES VERSION 8.4.0 SOVERSION 8)
-	target_include_directories(jpeg-static PUBLIC ${CMAKE_CURRENT_BINARY_DIR}
-		${CMAKE_CURRENT_SOURCE_DIR})
+	target_include_directories(jpeg-static PUBLIC
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+		"$<INSTALL_INTERFACE:include>"
+	)
 endif()
 
 set_target_properties(jpeg PROPERTIES VERSION 8.4.0 SOVERSION 8
 	PUBLIC_HEADER "${INSTINCLUDES}"
 	FOLDER Libraries
 )
-target_include_directories(jpeg PUBLIC ${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(jpeg PUBLIC
+	$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
+	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+	"$<INSTALL_INTERFACE:include>"
+)
 
 if(gcc_Wl_version_script)
 	# TODO: this does not seem necessary as libjpeg.map is basically empty
@@ -450,7 +446,7 @@ set(rdjpgcom_SRCS rdjpgcom.c)
 
 add_executable(rdjpgcom ${rdjpgcom_SRCS})
 
-target_link_libraries(rdjpgcom )
+target_include_directories(rdjpgcom PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
 
 ########### next target ###############
@@ -459,7 +455,7 @@ set(wrjpgcom_SRCS wrjpgcom.c)
 
 add_executable(wrjpgcom ${wrjpgcom_SRCS})
 
-target_link_libraries(wrjpgcom )
+target_include_directories(wrjpgcom PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
 set_target_properties(cjpeg djpeg jpegtran rdjpgcom wrjpgcom  PROPERTIES FOLDER
 	Executables)
@@ -498,17 +494,20 @@ endif()
 configure_file(jconfig-cmake.cfg jconfig.h)
 configure_file(cmake-flags.h.in cmake-flags.h)
 
-export(TARGETS jpeg FILE jpeg-targets.cmake )
 include(CMakePackageConfigHelpers)
 write_basic_package_version_file(
-	"${CMAKE_CURRENT_BINARY_DIR}/jpeg-config-version.cmake"
+	"${CMAKE_BINARY_DIR}/lib/cmake/jpeg-config-version.cmake"
 	COMPATIBILITY AnyNewerVersion
 )
 
+set(INCLUDE_INSTALL_DIR "include")
+
 configure_package_config_file(jpeg-config.cmake.in
-	"${CMAKE_CURRENT_BINARY_DIR}/jpeg-config.cmake"
-	INSTALL_DESTINATION lib/jpeg/cmake
+	"${CMAKE_BINARY_DIR}/lib/cmake/jpeg-config.cmake"
+	INSTALL_DESTINATION lib/cmake
+	PATH_VARS INCLUDE_INSTALL_DIR
 )
+export(TARGETS jpeg FILE ${CMAKE_BINARY_DIR}/lib/cmake/jpeg-targets.cmake )
 
 ########### install files ###############
 
