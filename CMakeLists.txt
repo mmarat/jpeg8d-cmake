@@ -1,7 +1,12 @@
 cmake_minimum_required(VERSION 3.0.0)
+set(CMAKE_BUILD_TYPE Release CACHE STRING
+	"Choose the type of build: None Debug Release RelWithDebInfo MinSizeRel")
+set(CMAKE_C_STANDARD 11) # supported: 90, 99, 11
+
 project(jpeg VERSION 8.4 LANGUAGES C)
 set(srcdir ${jpeg_SOURCE_DIR})
 set(CMAKE_MACOSX_RPATH ON)
+set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/Installation")
 
 foreach(cfg Debug Release RelWithDebInfo MinSizeRel None)
 	string(TOUPPER "_${cfg}" cfgo)
@@ -34,22 +39,27 @@ include (CheckCSourceCompiles)
 include (CheckCSourceRuns)
 include (CheckCCompilerFlag)
 
+function(check_c flag result_var)
+	set(CMAKE_REQUIRED_FLAGS ${flag}) # to test linking as well
+	check_c_compiler_flag("" ${result_var})
+endfunction()
+
 # compiler flags should be set before any HAVE_ checks
 if( CMAKE_COMPILER_IS_GNUCC )
-	check_c_compiler_flag(-Wall  gcc_Wall)
+	# check_c_compiler_flag(-Wall  gcc_Wall)
+	check_c(-Wall  gcc_Wall)
 	if( gcc_Wall )
 		set(CWARNFLAGS "${CWARNFLAGS} -Wall")
 	endif()
-	check_c_compiler_flag("${CWARNFLAGS} -Wno-obsolete" gcc_Wno_obsolete)
+	check_c("${CWARNFLAGS} -Wno-obsolete" gcc_Wno_obsolete)
 	if( gcc_Wno_obsolete )
 		set(CWARNFLAGS "${CWARNFLAGS} -Wno-obsolete")
 	endif()
-	# TODO: need to create temporary empty conftest.map
-	# check_c_compiler_flag("-Wl,--version-script=conftest.map" gcc_Wl_version_script)
-	check_c_compiler_flag("-Wl,--version-script" gcc_Wl_version_script)
+	check_c("-Wl,--version-script=${CMAKE_CURRENT_SOURCE_DIR}/empty_test.map"
+		gcc_Wl_version_script)
 
 	# linker flag  for Clang and GCC
-	check_c_compiler_flag("-no-undefined" gcc_no_undefined)
+	check_c("-Wl,-no-undefined" gcc_no_undefined)
 elseif( MSVC )
 	message(STATUS "Microsoft C/C++")
 	add_definitions("-D_CRT_SECURE_NO_WARNINGS") # disable non-secure API warnings
@@ -57,12 +67,12 @@ else()
 	# per cmake 2.8.8 documentation the following is not portable
 	message(STATUS "C Compiler guessed by cmake: ${CMAKE_C_COMPILER_ID}")
 	if( CMAKE_C_COMPILER_ID MATCHES "Intel" )
-		check_c_compiler_flag(-Wall intel_Wall)
+		check_c(-Wall intel_Wall)
 		if( intel_Wall )
 			set(CWARNFLAGS "${CWARNFLAGS} -Wall")
 		endif()
 	elseif( CMAKE_C_COMPILER_ID MATCHES "Clang" )
-		check_c_compiler_flag(-Wall clang_Wall)
+		check_c(-Wall clang_Wall)
 		if( clang_Wall )
 			set(CWARNFLAGS "${CWARNFLAGS} -Wall")
 		endif()
@@ -294,18 +304,16 @@ set(LIBSOURCES
 
 # System dependent sources
 set(SYSDEPSOURCES
-        jmemansi.c jmemname.c jmemnobs.c jmemdos.c jmemmac.c
+	jmemansi.c jmemname.c jmemnobs.c jmemdos.c jmemmac.c
 )
 
 # Headers which are installed to support the library
-set(INSTINCLUDES  jerror.h jmorecfg.h jpeglib.h
-	"${CMAKE_CURRENT_BINARY_DIR}/jconfig.h")
-set_source_files_properties("${CMAKE_CURRENT_BINARY_DIR}/jconfig.h"
-	PROPERTIES GENERATED TRUE)
+set(INSTINCLUDES  jerror.h jmorecfg.h jpeglib.h ${jconfig_h})
+set_source_files_properties(${jconfig_h} PROPERTIES GENERATED TRUE)
 source_group(Interface FILES ${INSTINCLUDES})
 
 # Headers which are not installed
-set(OTHERINCLUDES cderror.h cdjpeg.h jdct.h jinclude.h jmemsys.h jpegint.h 
+set(OTHERINCLUDES cderror.h cdjpeg.h jdct.h jinclude.h jmemsys.h jpegint.h
 	jversion.h transupp.h
 )
 
@@ -365,7 +373,7 @@ else()
 	set_target_properties(jpeg-static PROPERTIES OUTPUT_NAME jpeg FOLDER Libraries)
 	set_target_properties(jpeg-static PROPERTIES VERSION 8.4.0 SOVERSION 8)
 	target_include_directories(jpeg-static PUBLIC
-		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
+		$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/include>
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 		"$<INSTALL_INTERFACE:include>"
 	)
@@ -376,7 +384,7 @@ set_target_properties(jpeg PROPERTIES VERSION 8.4.0 SOVERSION 8
 	FOLDER Libraries
 )
 target_include_directories(jpeg PUBLIC
-	$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
+	$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/include>
 	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 	"$<INSTALL_INTERFACE:include>"
 )
@@ -446,7 +454,7 @@ set(rdjpgcom_SRCS rdjpgcom.c)
 
 add_executable(rdjpgcom ${rdjpgcom_SRCS})
 
-target_include_directories(rdjpgcom PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+target_include_directories(rdjpgcom PRIVATE ${CMAKE_BINARY_DIR}/include)
 
 
 ########### next target ###############
@@ -455,44 +463,15 @@ set(wrjpgcom_SRCS wrjpgcom.c)
 
 add_executable(wrjpgcom ${wrjpgcom_SRCS})
 
-target_include_directories(wrjpgcom PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+target_include_directories(wrjpgcom PRIVATE ${CMAKE_BINARY_DIR}/include)
 
 set_target_properties(cjpeg djpeg jpegtran rdjpgcom wrjpgcom  PROPERTIES FOLDER
 	Executables)
 
 ########## setup configuration headers ###########
 
-find_package(Git)
-if( GIT_FOUND )
-	exec_program(
-	    "${GIT_EXECUTABLE}"
-	    ${CMAKE_CURRENT_SOURCE_DIR}
-	    ARGS "show -s --format=\"%at\" HEAD"
-	    OUTPUT_VARIABLE GIT_UNIX_TIME_STAMP )
-	exec_program(
-	    "${GIT_EXECUTABLE}"
-	    ${CMAKE_CURRENT_SOURCE_DIR}
-	    ARGS "show -s --format=\"%ai_%h\" HEAD"
-	    OUTPUT_VARIABLE GIT_SHOW_DATE )
-	string(REGEX MATCH "[0-9][0-9]-[0-1][0-9]-[0-3][0-9] ..:..:.." GIT_STRIPPED_DATE ${GIT_SHOW_DATE})
-	string(REGEX REPLACE "[:-]" "" GIT_DATE_CODE ${GIT_STRIPPED_DATE})
-	string(REPLACE " " "-" GIT_DATE_CODE ${GIT_DATE_CODE})
-
-	message(STATUS "jpeg git SHOW-DATE: ${GIT_SHOW_DATE}")
-	message(STATUS "jpeg git stripped date: ${GIT_STRIPPED_DATE}")
-	message(STATUS "jpeg git date code: ${GIT_DATE_CODE}")
-	execute_process(
-		COMMAND "${GIT_EXECUTABLE}" log  "--pretty=--- %ai %h%n%w(80)%B" HEAD
-		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-		OUTPUT_FILE "${jpeg_BINARY_DIR}/jpeg_ChangeLog.txt"
-	)
-else()
-	message(STATUS "git NOT FOUND")
-endif()
-
-
-configure_file(jconfig-cmake.cfg jconfig.h)
-configure_file(cmake-flags.h.in cmake-flags.h)
+set(jconfig_h "${CMAKE_BINARY_DIR}/include/jconfig.h")
+configure_file(jconfig-cmake.cfg ${jconfig_h})
 
 include(CMakePackageConfigHelpers)
 write_basic_package_version_file(
@@ -512,38 +491,45 @@ export(TARGETS jpeg FILE ${CMAKE_BINARY_DIR}/lib/cmake/jpeg-targets.cmake )
 ########### install files ###############
 
 install(TARGETS jpeg cjpeg djpeg jpegtran rdjpgcom wrjpgcom
-  LIBRARY DESTINATION lib COMPONENT Runtime
-  ARCHIVE DESTINATION lib COMPONENT Development
-  RUNTIME DESTINATION bin COMPONENT Runtime
-  PUBLIC_HEADER DESTINATION include COMPONENT Development
+	EXPORT jpeg-targets
+	LIBRARY DESTINATION lib COMPONENT Runtime
+	ARCHIVE DESTINATION lib COMPONENT Development
+	RUNTIME DESTINATION bin COMPONENT Runtime
+	PUBLIC_HEADER DESTINATION include COMPONENT Development
 )
+install(EXPORT jpeg-targets FILE jpeg-targets.cmake DESTINATION lib/cmake)
+install(FILES "${CMAKE_BINARY_DIR}/lib/cmake/jpeg-config-version.cmake"
+	"${CMAKE_BINARY_DIR}/lib/cmake/jpeg-config.cmake"
+	DESTINATION lib/cmake)
 
 ################### TESTS
 enable_testing()
 
-add_test(NAME djpeg-test1 COMMAND $<TARGET_FILE:djpeg> -dct int -ppm -outfile testout.ppm  ${srcdir}/testorig.jpg)
+add_test(NAME djpeg-test1 COMMAND
+	$<TARGET_FILE:djpeg> -dct int -ppm -outfile testout.ppm  ${srcdir}/testorig.jpg)
 add_test(djpeg-diff-test1 ${CMAKE_COMMAND} -E compare_files ${srcdir}/testimg.ppm testout.ppm)
-set_tests_properties(djpeg-diff-test1 PROPERTIES DEPENDS djpeg-test1)
+set_tests_properties(djpeg-diff-test1 PROPERTIES DEPENDS djpeg-test1 LABELS under_15_sec)
 
-add_test(NAME djpeg-test2 COMMAND $<TARGET_FILE:djpeg> -dct int -bmp -colors 256 -outfile testout.bmp  ${srcdir}/testorig.jpg)
+add_test(NAME djpeg-test2 COMMAND
+	$<TARGET_FILE:djpeg> -dct int -bmp -colors 256 -outfile testout.bmp  ${srcdir}/testorig.jpg)
 add_test(djpeg-diff-test2 ${CMAKE_COMMAND} -E compare_files ${srcdir}/testimg.bmp testout.bmp)
-set_tests_properties(djpeg-diff-test2 PROPERTIES DEPENDS djpeg-test2)
+set_tests_properties(djpeg-diff-test2 PROPERTIES DEPENDS djpeg-test2 LABELS under_15_sec)
 
 add_test(NAME cjpeg-test1 COMMAND $<TARGET_FILE:cjpeg> -dct int -outfile testout.jpg  ${srcdir}/testimg.ppm)
 add_test(cjpeg-diff-test1 ${CMAKE_COMMAND} -E compare_files  ${srcdir}/testimg.jpg testout.jpg)
-set_tests_properties(cjpeg-diff-test1 PROPERTIES DEPENDS cjpeg-test1)
+set_tests_properties(cjpeg-diff-test1 PROPERTIES DEPENDS cjpeg-test1 LABELS under_15_sec)
 
 add_test(NAME djpeg-test3 COMMAND $<TARGET_FILE:djpeg> -dct int -ppm -outfile testoutp.ppm ${srcdir}/testprog.jpg)
 add_test(djpeg-diff-test3 ${CMAKE_COMMAND} -E compare_files ${srcdir}/testimg.ppm testoutp.ppm)
-set_tests_properties(djpeg-diff-test3 PROPERTIES DEPENDS djpeg-test3)
+set_tests_properties(djpeg-diff-test3 PROPERTIES DEPENDS djpeg-test3 LABELS under_15_sec)
 
 add_test(NAME cjpeg-test2 COMMAND $<TARGET_FILE:cjpeg> -dct int -progressive -opt -outfile testoutp.jpg ${srcdir}/testimg.ppm)
 add_test(cjpeg-diff-test2 ${CMAKE_COMMAND} -E compare_files ${srcdir}/testimgp.jpg testoutp.jpg)
-set_tests_properties(cjpeg-diff-test2 PROPERTIES DEPENDS cjpeg-test2)
+set_tests_properties(cjpeg-diff-test2 PROPERTIES DEPENDS cjpeg-test2 LABELS under_15_sec)
 
 add_test(NAME jpegtran-test1 COMMAND $<TARGET_FILE:jpegtran> -outfile testoutt.jpg ${srcdir}/testprog.jpg)
 add_test(jpegtran-diff-test1 ${CMAKE_COMMAND} -E compare_files ${srcdir}/testorig.jpg testoutt.jpg)
-set_tests_properties(jpegtran-diff-test1 PROPERTIES DEPENDS jpegtran-test1)
+set_tests_properties(jpegtran-diff-test1 PROPERTIES DEPENDS jpegtran-test1 LABELS under_15_sec)
 
 include(InstallRequiredSystemLibraries)
 include(CPack)
