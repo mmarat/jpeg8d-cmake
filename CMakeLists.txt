@@ -63,7 +63,7 @@ elseif( MSVC )
 	message(STATUS "Microsoft C/C++.  OPTIMIZATIONS DISABLED FOR jquant2.c !!!")
 	message(STATUS "Workaround for MSVC optimization bug is implemented with pragma")
 	message(STATUS "Optimiations disabled for MSVC versions <= 30.0")
-	if( ${MSVC_VERSION} > 3000 )
+	if( ${MSVC_VERSION} GREATER 3000 )
 		message(FATAL_ERROR "MSVC version ${MSVC_VERSION} is not supported, some tests might fail, see jquant2.c")
 	endif()
 	# so at the moment using #pragma optimize in jquant2.c
