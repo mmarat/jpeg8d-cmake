@@ -61,7 +61,13 @@ if( CMAKE_COMPILER_IS_GNUCC )
 	# linker flag  for Clang and GCC
 	check_c("-Wl,-no-undefined" gcc_no_undefined)
 elseif( MSVC )
-	message(STATUS "Microsoft C/C++")
+	message(STATUS "Microsoft C/C++.  OPTIMIZATIONS DISABLED FOR jquant2.c !!!")
+	message(STATUS "Workaround for MSVC optimization bug is implemented with pragma")
+	message(STATUS "Optimiations disabled for MSVC versions <= 30.0")
+	if( ${MSVC_VERSION} > 3000 )
+		message(WARNING "MSVC version ${MSVC_VERSION} is not supported, some tests might fail")
+	endif()
+	# so at the moment using #pragma optimize in jquant2.c
 	add_definitions("-D_CRT_SECURE_NO_WARNINGS") # disable non-secure API warnings
 else()
 	# per cmake 2.8.8 documentation the following is not portable
@@ -292,76 +298,50 @@ endif()
 ########### next target ###############
 ## Sources to build library
 set(LIBSOURCES
-	jaricom.c jcapimin.c jcapistd.c jcarith.c jccoefct.c jccolor.c
-	jcdctmgr.c jchuff.c jcinit.c jcmainct.c jcmarker.c jcmaster.c
-	jcomapi.c jcparam.c jcprepct.c jcsample.c jctrans.c jdapimin.c
-	jdapistd.c jdarith.c jdatadst.c jdatasrc.c jdcoefct.c jdcolor.c
-	jddctmgr.c jdhuff.c jdinput.c jdmainct.c jdmarker.c jdmaster.c
-	jdmerge.c jdpostct.c jdsample.c jdtrans.c jerror.c jfdctflt.c
-	jfdctfst.c jfdctint.c jidctflt.c jidctfst.c jidctint.c jquant1.c
-	jutils.c jmemmgr.c ${MEMORYMGR}.c
+	src/jaricom.c src/jcapimin.c src/jcapistd.c src/jcarith.c src/jccoefct.c src/jccolor.c
+	src/jcdctmgr.c src/jchuff.c src/jcinit.c src/jcmainct.c src/jcmarker.c src/jcmaster.c
+	src/jcomapi.c src/jcparam.c src/jcprepct.c src/jcsample.c src/jctrans.c src/jdapimin.c
+	src/jdapistd.c src/jdarith.c src/jdatadst.c src/jdatasrc.c src/jdcoefct.c src/jdcolor.c
+	src/jddctmgr.c src/jdhuff.c src/jdinput.c src/jdmainct.c src/jdmarker.c src/jdmaster.c
+	src/jdmerge.c src/jdpostct.c src/jdsample.c src/jdtrans.c src/jerror.c src/jfdctflt.c
+	src/jfdctfst.c src/jfdctint.c src/jidctflt.c src/jidctfst.c src/jidctint.c src/jquant1.c
+	src/jutils.c src/jmemmgr.c src/${MEMORYMGR}.c
 )
 
 # System dependent sources
 set(SYSDEPSOURCES
-	jmemansi.c jmemname.c jmemnobs.c jmemdos.c jmemmac.c
+	src/jmemansi.c src/jmemname.c src/jmemnobs.c src/jmemdos.c src/jmemmac.c
 )
 
+set(jconfig_h "${CMAKE_BINARY_DIR}/include/jconfig.h")
+configure_file(jconfig-cmake.cfg ${jconfig_h})
+
 # Headers which are installed to support the library
-set(INSTINCLUDES  jerror.h jmorecfg.h jpeglib.h ${jconfig_h})
+set(INSTINCLUDES  src/jerror.h src/jmorecfg.h src/jpeglib.h ${jconfig_h})
 set_source_files_properties(${jconfig_h} PROPERTIES GENERATED TRUE)
 source_group(Interface FILES ${INSTINCLUDES})
 
 # Headers which are not installed
-set(OTHERINCLUDES cderror.h cdjpeg.h jdct.h jinclude.h jmemsys.h jpegint.h
-	jversion.h transupp.h
+set(OTHERINCLUDES tools/cderror.h tools/cdjpeg.h src/jdct.h src/jinclude.h
+	src/jmemsys.h src/jpegint.h
+	src/jversion.h tools/transupp.h
 )
 
 # Manual pages (Automake uses 'MANS' for itself)
-set(DISTMANS cjpeg.1 djpeg.1 jpegtran.1 rdjpgcom.1 wrjpgcom.1)
+set(DISTMANS man/cjpeg.1 man/djpeg.1 man/jpegtran.1 man/rdjpgcom.1 man/wrjpgcom.1)
 
 # Other documentation files
-set(DOCS README install.txt usage.txt wizard.txt example.c libjpeg.txt
+set(DOCS README "install.txt" usage.txt wizard.txt tools/example.c libjpeg.txt
 	structure.txt coderules.txt filelist.txt change.log)
 
-# Makefiles for various systems
-set(MKFILES configure Makefile.in makefile.ansi makefile.unix makefile.bcc
-	makefile.mc6 makefile.dj makefile.wat makefile.vc makejdsw.vc6
-	makeadsw.vc6 makejdep.vc6 makejdsp.vc6 makejmak.vc6 makecdep.vc6
-	makecdsp.vc6 makecmak.vc6 makeddep.vc6 makeddsp.vc6 makedmak.vc6
-	maketdep.vc6 maketdsp.vc6 maketmak.vc6 makerdep.vc6 makerdsp.vc6
-	makermak.vc6 makewdep.vc6 makewdsp.vc6 makewmak.vc6 makejsln.v10
-	makeasln.v10 makejvcx.v10 makejfil.v10 makecvcx.v10 makecfil.v10
-	makedvcx.v10 makedfil.v10 maketvcx.v10 maketfil.v10 makervcx.v10
-	makerfil.v10 makewvcx.v10 makewfil.v10 makeproj.mac makcjpeg.st
-	makdjpeg.st makljpeg.st maktjpeg.st makefile.manx makefile.sas
-	makefile.mms makefile.vms makvms.opt
-)
-
-# Configuration files
-set(CONFIGFILES jconfig.cfg jconfig.bcc jconfig.mc6 jconfig.dj jconfig.wat
-	jconfig.vc jconfig.mac jconfig.st jconfig.manx jconfig.sas
-	jconfig.vms
-)
-
-# Support scripts for configure
-set(CONFIGUREFILES config.guess config.sub install-sh ltmain.sh depcomp missing)
-
 # Miscellaneous support files
-set(OTHERFILES jconfig.txt ckconfig.c ansi2knr.c ansi2knr.1 jmemdosa.asm
-	libjpeg.map)
+set(OTHERFILES jconfig.txt libjpeg.map)
 
 # Test support files
 set(TESTFILES testorig.jpg testimg.ppm testimg.bmp testimg.jpg testprog.jpg
 	testimgp.jpg)
 
-# workaround for MSVC optimization bug
-# this solution requires cmake 2.8.8, released in Apr 2012
-# so at the moment using #pragma optimize in jquant2.c
-# add_subdirectory(jquant2)
-# set(jpeg_LIB_SRCS ${LIBSOURCES} $<TARGET_OBJECTS:jquant2> )
-
-set(jpeg_LIB_SRCS ${LIBSOURCES} jquant2.c ${INSTINCLUDES} ${OTHERINCLUDES})
+set(jpeg_LIB_SRCS ${LIBSOURCES} src/jquant2.c ${INSTINCLUDES} ${OTHERINCLUDES})
 
 if( WIN32 )
 	# there are no dllexport in the source, and no .def file yet
@@ -369,14 +349,6 @@ if( WIN32 )
 	add_library(jpeg STATIC ${jpeg_LIB_SRCS})
 else()
 	add_library(jpeg SHARED ${jpeg_LIB_SRCS})
-	add_library(jpeg-static STATIC ${jpeg_LIB_SRCS})
-	set_target_properties(jpeg-static PROPERTIES OUTPUT_NAME jpeg FOLDER Libraries)
-	set_target_properties(jpeg-static PROPERTIES VERSION 8.4.0 SOVERSION 8)
-	target_include_directories(jpeg-static PUBLIC
-		$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/include>
-		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-		"$<INSTALL_INTERFACE:include>"
-	)
 endif()
 
 set_target_properties(jpeg PROPERTIES VERSION 8.4.0 SOVERSION 8
@@ -385,7 +357,7 @@ set_target_properties(jpeg PROPERTIES VERSION 8.4.0 SOVERSION 8
 )
 target_include_directories(jpeg PUBLIC
 	$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/include>
-	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
 	"$<INSTALL_INTERFACE:include>"
 )
 
@@ -399,79 +371,51 @@ if(gcc_no_undefined)
 endif()
 
 
-########### next target ###############
+########### Executables ###############
 
 set(cjpeg_SRCS
-    cjpeg.c
-    rdppm.c
-    rdgif.c
-    rdtarga.c
-    rdrle.c
-    rdbmp.c
-    rdswitch.c
-    cdjpeg.c)
-
+    tools/cjpeg.c
+    tools/rdppm.c
+    tools/rdgif.c
+    tools/rdtarga.c
+    tools/rdrle.c
+    tools/rdbmp.c
+    tools/rdswitch.c
+    tools/cdjpeg.c)
 add_executable(cjpeg ${cjpeg_SRCS})
-
 target_link_libraries(cjpeg jpeg)
 
-
-########### next target ###############
-
 set(djpeg_SRCS
-    djpeg.c
-    wrppm.c
-    wrgif.c
-    wrtarga.c
-    wrrle.c
-    wrbmp.c
-    rdcolmap.c
-    cdjpeg.c)
-
+    tools/djpeg.c
+    tools/wrppm.c
+    tools/wrgif.c
+    tools/wrtarga.c
+    tools/wrrle.c
+    tools/wrbmp.c
+    tools/rdcolmap.c
+    tools/cdjpeg.c)
 add_executable(djpeg ${djpeg_SRCS})
-
 target_link_libraries(djpeg jpeg)
 
-
-
-########### next target ###############
-
 set(jpegtran_SRCS
-    jpegtran.c
-    rdswitch.c
-    cdjpeg.c
-    transupp.c)
-
+    tools/jpegtran.c
+    tools/rdswitch.c
+    tools/cdjpeg.c
+    tools/transupp.c)
 add_executable(jpegtran ${jpegtran_SRCS})
-
 target_link_libraries(jpegtran jpeg)
 
+add_executable(rdjpgcom tools/rdjpgcom.c)
+target_include_directories(rdjpgcom PRIVATE src "${CMAKE_BINARY_DIR}/include")
 
 
-########### next target ###############
-
-set(rdjpgcom_SRCS rdjpgcom.c)
-
-add_executable(rdjpgcom ${rdjpgcom_SRCS})
-
-target_include_directories(rdjpgcom PRIVATE ${CMAKE_BINARY_DIR}/include)
-
-
-########### next target ###############
-
-set(wrjpgcom_SRCS wrjpgcom.c)
-
-add_executable(wrjpgcom ${wrjpgcom_SRCS})
-
-target_include_directories(wrjpgcom PRIVATE ${CMAKE_BINARY_DIR}/include)
+add_executable(wrjpgcom tools/wrjpgcom.c)
+target_include_directories(wrjpgcom PRIVATE src "${CMAKE_BINARY_DIR}/include")
 
 set_target_properties(cjpeg djpeg jpegtran rdjpgcom wrjpgcom  PROPERTIES FOLDER
 	Executables)
 
 ########## setup configuration headers ###########
-
-set(jconfig_h "${CMAKE_BINARY_DIR}/include/jconfig.h")
-configure_file(jconfig-cmake.cfg ${jconfig_h})
 
 include(CMakePackageConfigHelpers)
 write_basic_package_version_file(
@@ -506,30 +450,47 @@ install(FILES "${CMAKE_BINARY_DIR}/lib/cmake/jpeg-config-version.cmake"
 enable_testing()
 
 add_test(NAME djpeg-test1 COMMAND
-	$<TARGET_FILE:djpeg> -dct int -ppm -outfile testout.ppm  ${srcdir}/testorig.jpg)
-add_test(djpeg-diff-test1 ${CMAKE_COMMAND} -E compare_files ${srcdir}/testimg.ppm testout.ppm)
-set_tests_properties(djpeg-diff-test1 PROPERTIES DEPENDS djpeg-test1 LABELS under_15_sec)
+	$<TARGET_FILE:djpeg> -dct int -ppm -outfile testout.ppm  ${srcdir}/tests/testorig.jpg)
+add_test(djpeg-diff-test1 ${CMAKE_COMMAND} -E compare_files ${srcdir}/tests/testimg.ppm testout.ppm)
+set_tests_properties(djpeg-diff-test1 PROPERTIES DEPENDS djpeg-test1)
 
 add_test(NAME djpeg-test2 COMMAND
-	$<TARGET_FILE:djpeg> -dct int -bmp -colors 256 -outfile testout.bmp  ${srcdir}/testorig.jpg)
-add_test(djpeg-diff-test2 ${CMAKE_COMMAND} -E compare_files ${srcdir}/testimg.bmp testout.bmp)
-set_tests_properties(djpeg-diff-test2 PROPERTIES DEPENDS djpeg-test2 LABELS under_15_sec)
+	$<TARGET_FILE:djpeg> -dct int -bmp -colors 256 -outfile testout.bmp  ${srcdir}/tests/testorig.jpg)
+add_test(djpeg-diff-test2
+	${CMAKE_COMMAND} -E compare_files ${srcdir}/tests/testimg.bmp testout.bmp)
+set_tests_properties(djpeg-diff-test2 PROPERTIES DEPENDS djpeg-test2)
 
-add_test(NAME cjpeg-test1 COMMAND $<TARGET_FILE:cjpeg> -dct int -outfile testout.jpg  ${srcdir}/testimg.ppm)
-add_test(cjpeg-diff-test1 ${CMAKE_COMMAND} -E compare_files  ${srcdir}/testimg.jpg testout.jpg)
-set_tests_properties(cjpeg-diff-test1 PROPERTIES DEPENDS cjpeg-test1 LABELS under_15_sec)
+add_test(NAME cjpeg-test1
+	COMMAND $<TARGET_FILE:cjpeg> -dct int -outfile testout.jpg  ${srcdir}/tests/testimg.ppm)
+add_test(cjpeg-diff-test1
+	${CMAKE_COMMAND} -E compare_files  ${srcdir}/tests/testimg.jpg testout.jpg)
+set_tests_properties(cjpeg-diff-test1 PROPERTIES DEPENDS cjpeg-test1)
 
-add_test(NAME djpeg-test3 COMMAND $<TARGET_FILE:djpeg> -dct int -ppm -outfile testoutp.ppm ${srcdir}/testprog.jpg)
-add_test(djpeg-diff-test3 ${CMAKE_COMMAND} -E compare_files ${srcdir}/testimg.ppm testoutp.ppm)
-set_tests_properties(djpeg-diff-test3 PROPERTIES DEPENDS djpeg-test3 LABELS under_15_sec)
+add_test(NAME djpeg-test3 COMMAND
+	$<TARGET_FILE:djpeg> -dct int -ppm -outfile testoutp.ppm ${srcdir}/tests/testprog.jpg)
+add_test(djpeg-diff-test3
+	${CMAKE_COMMAND} -E compare_files ${srcdir}/tests/testimg.ppm testoutp.ppm)
+set_tests_properties(djpeg-diff-test3 PROPERTIES DEPENDS djpeg-test3)
 
-add_test(NAME cjpeg-test2 COMMAND $<TARGET_FILE:cjpeg> -dct int -progressive -opt -outfile testoutp.jpg ${srcdir}/testimg.ppm)
-add_test(cjpeg-diff-test2 ${CMAKE_COMMAND} -E compare_files ${srcdir}/testimgp.jpg testoutp.jpg)
-set_tests_properties(cjpeg-diff-test2 PROPERTIES DEPENDS cjpeg-test2 LABELS under_15_sec)
+add_test(NAME cjpeg-test2 COMMAND
+	$<TARGET_FILE:cjpeg> -dct int -progressive -opt -outfile testoutp.jpg ${srcdir}/tests/testimg.ppm)
+add_test(cjpeg-diff-test2
+	${CMAKE_COMMAND} -E compare_files ${srcdir}/tests/testimgp.jpg testoutp.jpg)
+set_tests_properties(cjpeg-diff-test2 PROPERTIES DEPENDS cjpeg-test2)
 
-add_test(NAME jpegtran-test1 COMMAND $<TARGET_FILE:jpegtran> -outfile testoutt.jpg ${srcdir}/testprog.jpg)
-add_test(jpegtran-diff-test1 ${CMAKE_COMMAND} -E compare_files ${srcdir}/testorig.jpg testoutt.jpg)
-set_tests_properties(jpegtran-diff-test1 PROPERTIES DEPENDS jpegtran-test1 LABELS under_15_sec)
+add_test(NAME jpegtran-test1 COMMAND
+	$<TARGET_FILE:jpegtran> -outfile testoutt.jpg ${srcdir}/tests/testprog.jpg)
+add_test(jpegtran-diff-test1
+	${CMAKE_COMMAND} -E compare_files ${srcdir}/tests/testorig.jpg testoutt.jpg)
+set_tests_properties(jpegtran-diff-test1 PROPERTIES DEPENDS jpegtran-test1)
+
+set_tests_properties(jpegtran-diff-test1 jpegtran-test1 cjpeg-diff-test2
+	cjpeg-test2 djpeg-diff-test3  djpeg-test3 cjpeg-diff-test1  cjpeg-test1
+	djpeg-diff-test2 djpeg-test2 djpeg-diff-test1  djpeg-test1
+	PROPERTIES COST 15 LABELS "15_sec;jpeg"
+)
 
 include(InstallRequiredSystemLibraries)
 include(CPack)
+
+# vim:noet ts=4 sw=4
