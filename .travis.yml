@@ -9,9 +9,25 @@ before_install:
   - echo $LC_ALL
   - echo $TRAVIS_OS_NAME
 
+install:
+  - sudo apt-cache madison cmake
+  - wget "http://www.cmake.org/files/v3.0/cmake-3.0.0.tar.gz"
+  - openssl sha1 "cmake-3.0.0.tar.gz"
+  - tar xf "cmake-3.0.0.tar.gz"
+  - cd "cmake-3.0.0"
+  - ./bootstrap --prefix=~
+  - make
+  - make install
+  - export PATH="~/bin:${PATH}"
+  - cd ..
+  - which cmake
+  - cmake --version
+  - sudo apt-get install "cmake-3.0.0"
+
 before_script:
   - mkdir buildx
   - cd buildx
+  - which cmake
   - cmake ..
 
 script: cmake --build . --config Release
