@@ -406,7 +406,7 @@ add_executable(wrjpgcom tools/wrjpgcom.c)
 target_include_directories(wrjpgcom PRIVATE src "${CMAKE_BINARY_DIR}/include")
 
 set_target_properties(cjpeg djpeg jpegtran rdjpgcom wrjpgcom  PROPERTIES FOLDER
-	Executables)
+	Executables/jpeg)
 
 ########## setup configuration headers ###########
 
