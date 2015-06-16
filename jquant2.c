@@ -946,8 +946,8 @@ pass2_no_dither (j_decompress_ptr cinfo,
 }
 
 #ifdef _MSC_VER
-#if _MSC_VER == 1600
-/* disable optimization for pass2_fs_dither
+#if _MSC_VER <= 3000
+/* mrt: disable optimization for pass2_fs_dither
    The problem happens with the following compiler, both 32 and 64 bit:
    Microsoft (R) C/C++ Optimizing Compiler Version 16.00.30319.01 for 80x86
  */
