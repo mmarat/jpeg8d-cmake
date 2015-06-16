@@ -1,0 +1,6 @@
+* text=auto
+*.c text
+*.h text
+*.cmake text
+*.bmp -text
+*.jpg -text
