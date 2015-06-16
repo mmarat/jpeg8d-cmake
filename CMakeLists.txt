@@ -55,10 +55,9 @@ if( CMAKE_COMPILER_IS_GNUCC )
 	if( gcc_Wno_obsolete )
 		set(CWARNFLAGS "${CWARNFLAGS} -Wno-obsolete")
 	endif()
+	# linker flags
 	check_c("-Wl,--version-script=${CMAKE_CURRENT_SOURCE_DIR}/empty_test.map"
 		gcc_Wl_version_script)
-
-	# linker flag  for Clang and GCC
 	check_c("-Wl,-no-undefined" gcc_no_undefined)
 elseif( MSVC )
 	message(STATUS "Microsoft C/C++.  OPTIMIZATIONS DISABLED FOR jquant2.c !!!")
@@ -367,7 +366,7 @@ if(gcc_Wl_version_script)
 		"-Wl,--version-script=${srcdir}/libjpeg.map")
 endif()
 if(gcc_no_undefined)
-	set_target_properties(jpeg PROPERTIES LINK_FLAGS "-no-undefined")
+	set_target_properties(jpeg PROPERTIES LINK_FLAGS "-Wl,-no-undefined")
 endif()
 
 
