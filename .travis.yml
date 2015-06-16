@@ -8,6 +8,9 @@ before_install:
   - echo $LANG
   - echo $LC_ALL
   - echo $TRAVIS_OS_NAME
+  - uname -a
+  - sudo apt-get update -qq
+  - sudo apt-get install -qq
 
 install:
   - sudo apt-cache madison cmake
@@ -22,15 +25,17 @@ install:
   - cd ..
   - which cmake
   - cmake --version
-  - sudo apt-get install "cmake-3.0.0"
 
 before_script:
   - mkdir buildx
   - cd buildx
   - which cmake
-  - cmake ..
+  - ~/bin/cmake ..
 
-script: cmake --build . --config Release
+script:
+  - pwd
+  - which cmake
+  - ~/bin/cmake --build . --config Release
 
 branches:
   only:
