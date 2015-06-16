@@ -1,0 +1,4 @@
+dummy_tmp_test_1.0 {
+  global:
+    *;
+};
