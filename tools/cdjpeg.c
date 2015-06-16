@@ -43,7 +43,7 @@ signal_catcher (int signum)
 }
 
 
-GLOBAL(void)
+GLOBAL_JPEG_TOOL(void)
 enable_signal_catcher (j_common_ptr cinfo)
 {
   sig_cinfo = cinfo;
@@ -85,7 +85,7 @@ progress_monitor (j_common_ptr cinfo)
 }
 
 
-GLOBAL(void)
+GLOBAL_JPEG_TOOL(void)
 start_progress_monitor (j_common_ptr cinfo, cd_progress_ptr progress)
 {
   /* Enable progress display, unless trace output is on */
@@ -99,7 +99,7 @@ start_progress_monitor (j_common_ptr cinfo, cd_progress_ptr progress)
 }
 
 
-GLOBAL(void)
+GLOBAL_JPEG_TOOL(void)
 end_progress_monitor (j_common_ptr cinfo)
 {
   /* Clear away progress display */
@@ -118,7 +118,7 @@ end_progress_monitor (j_common_ptr cinfo)
  * minchars is length of minimum legal abbreviation.
  */
 
-GLOBAL(boolean)
+GLOBAL_JPEG_TOOL(boolean)
 keymatch (char * arg, const char * keyword, int minchars)
 {
   register int ca, ck;
@@ -145,7 +145,7 @@ keymatch (char * arg, const char * keyword, int minchars)
  * Non-Unix systems often require some hacking to get out of text mode.
  */
 
-GLOBAL(FILE *)
+GLOBAL_JPEG_TOOL(FILE *)
 read_stdin (void)
 {
   FILE * input_file = stdin;
@@ -163,7 +163,7 @@ read_stdin (void)
 }
 
 
-GLOBAL(FILE *)
+GLOBAL_JPEG_TOOL(FILE *)
 write_stdout (void)
 {
   FILE * output_file = stdout;

@@ -367,7 +367,7 @@ finish_input_rle (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
  * The module selection routine for RLE format input.
  */
 
-GLOBAL(cjpeg_source_ptr)
+GLOBAL_JPEG_TOOL(cjpeg_source_ptr)
 jinit_read_rle (j_compress_ptr cinfo)
 {
   rle_source_ptr source;

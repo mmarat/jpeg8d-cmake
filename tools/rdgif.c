@@ -27,7 +27,7 @@
  * The module selection routine for GIF format input.
  */
 
-GLOBAL(cjpeg_source_ptr)
+GLOBAL_JPEG_TOOL(cjpeg_source_ptr)
 jinit_read_gif (j_compress_ptr cinfo)
 {
   fprintf(stderr, "GIF input is unsupported for legal reasons.  Sorry.\n");

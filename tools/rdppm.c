@@ -440,7 +440,7 @@ finish_input_ppm (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
  * The module selection routine for PPM format input.
  */
 
-GLOBAL(cjpeg_source_ptr)
+GLOBAL_JPEG_TOOL(cjpeg_source_ptr)
 jinit_read_ppm (j_compress_ptr cinfo)
 {
   ppm_source_ptr source;

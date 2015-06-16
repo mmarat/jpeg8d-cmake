@@ -273,7 +273,7 @@ finish_output_rle (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo)
  * The module selection routine for RLE format output.
  */
 
-GLOBAL(djpeg_dest_ptr)
+GLOBAL_JPEG_TOOL(djpeg_dest_ptr)
 jinit_write_rle (j_decompress_ptr cinfo)
 {
   rle_dest_ptr dest;

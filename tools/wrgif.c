@@ -356,7 +356,7 @@ finish_output_gif (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo)
  * The module selection routine for GIF format output.
  */
 
-GLOBAL(djpeg_dest_ptr)
+GLOBAL_JPEG_TOOL(djpeg_dest_ptr)
 jinit_write_gif (j_decompress_ptr cinfo)
 {
   gif_dest_ptr dest;

@@ -70,7 +70,7 @@ read_text_integer (FILE * file, long * result, int * termchar)
 }
 
 
-GLOBAL(boolean)
+GLOBAL_JPEG_TOOL(boolean)
 read_quant_tables (j_compress_ptr cinfo, char * filename, boolean force_baseline)
 /* Read a set of quantization tables from the specified file.
  * The file is plain ASCII text: decimal numbers with whitespace between.
@@ -155,7 +155,7 @@ read_scan_integer (FILE * file, long * result, int * termchar)
 }
 
 
-GLOBAL(boolean)
+GLOBAL_JPEG_TOOL(boolean)
 read_scan_script (j_compress_ptr cinfo, char * filename)
 /* Read a scan script from the specified text file.
  * Each entry in the file defines one scan to be emitted.
@@ -263,7 +263,7 @@ bogus:
 #endif /* C_MULTISCAN_FILES_SUPPORTED */
 
 
-GLOBAL(boolean)
+GLOBAL_JPEG_TOOL(boolean)
 set_quality_ratings (j_compress_ptr cinfo, char *arg, boolean force_baseline)
 /* Process a quality-ratings parameter string, of the form
  *     N[,N,...]
@@ -295,7 +295,7 @@ set_quality_ratings (j_compress_ptr cinfo, char *arg, boolean force_baseline)
 }
 
 
-GLOBAL(boolean)
+GLOBAL_JPEG_TOOL(boolean)
 set_quant_slots (j_compress_ptr cinfo, char *arg)
 /* Process a quantization-table-selectors parameter string, of the form
  *     N[,N,...]
@@ -330,7 +330,7 @@ set_quant_slots (j_compress_ptr cinfo, char *arg)
 }
 
 
-GLOBAL(boolean)
+GLOBAL_JPEG_TOOL(boolean)
 set_sample_factors (j_compress_ptr cinfo, char *arg)
 /* Process a sample-factors parameter string, of the form
  *     HxV[,HxV,...]

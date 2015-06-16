@@ -91,7 +91,7 @@ typedef struct cdjpeg_progress_mgr * cd_progress_ptr;
 
 /* Short forms of external names for systems with brain-damaged linkers. */
 
-#ifdef NEED_SHORT_EXTERNAL_NAMES
+#ifdef NEED_SHORT_EXTERN_JPEG_TOOLAL_NAMES
 #define jinit_read_bmp		jIRdBMP
 #define jinit_write_bmp		jIWrBMP
 #define jinit_read_gif		jIRdGIF
@@ -113,45 +113,45 @@ typedef struct cdjpeg_progress_mgr * cd_progress_ptr;
 #define end_progress_monitor	EnProgMon
 #define read_stdin		RdStdin
 #define write_stdout		WrStdout
-#endif /* NEED_SHORT_EXTERNAL_NAMES */
+#endif /* NEED_SHORT_EXTERN_JPEG_TOOLAL_NAMES */
 
 /* Module selection routines for I/O modules. */
 
-EXTERN(cjpeg_source_ptr) jinit_read_bmp JPP((j_compress_ptr cinfo));
-EXTERN(djpeg_dest_ptr) jinit_write_bmp JPP((j_decompress_ptr cinfo,
+EXTERN_JPEG_TOOL(cjpeg_source_ptr) jinit_read_bmp JPP((j_compress_ptr cinfo));
+EXTERN_JPEG_TOOL(djpeg_dest_ptr) jinit_write_bmp JPP((j_decompress_ptr cinfo,
 					    boolean is_os2));
-EXTERN(cjpeg_source_ptr) jinit_read_gif JPP((j_compress_ptr cinfo));
-EXTERN(djpeg_dest_ptr) jinit_write_gif JPP((j_decompress_ptr cinfo));
-EXTERN(cjpeg_source_ptr) jinit_read_ppm JPP((j_compress_ptr cinfo));
-EXTERN(djpeg_dest_ptr) jinit_write_ppm JPP((j_decompress_ptr cinfo));
-EXTERN(cjpeg_source_ptr) jinit_read_rle JPP((j_compress_ptr cinfo));
-EXTERN(djpeg_dest_ptr) jinit_write_rle JPP((j_decompress_ptr cinfo));
-EXTERN(cjpeg_source_ptr) jinit_read_targa JPP((j_compress_ptr cinfo));
-EXTERN(djpeg_dest_ptr) jinit_write_targa JPP((j_decompress_ptr cinfo));
+EXTERN_JPEG_TOOL(cjpeg_source_ptr) jinit_read_gif JPP((j_compress_ptr cinfo));
+EXTERN_JPEG_TOOL(djpeg_dest_ptr) jinit_write_gif JPP((j_decompress_ptr cinfo));
+EXTERN_JPEG_TOOL(cjpeg_source_ptr) jinit_read_ppm JPP((j_compress_ptr cinfo));
+EXTERN_JPEG_TOOL(djpeg_dest_ptr) jinit_write_ppm JPP((j_decompress_ptr cinfo));
+EXTERN_JPEG_TOOL(cjpeg_source_ptr) jinit_read_rle JPP((j_compress_ptr cinfo));
+EXTERN_JPEG_TOOL(djpeg_dest_ptr) jinit_write_rle JPP((j_decompress_ptr cinfo));
+EXTERN_JPEG_TOOL(cjpeg_source_ptr) jinit_read_targa JPP((j_compress_ptr cinfo));
+EXTERN_JPEG_TOOL(djpeg_dest_ptr) jinit_write_targa JPP((j_decompress_ptr cinfo));
 
 /* cjpeg support routines (in rdswitch.c) */
 
-EXTERN(boolean) read_quant_tables JPP((j_compress_ptr cinfo, char * filename,
+EXTERN_JPEG_TOOL(boolean) read_quant_tables JPP((j_compress_ptr cinfo, char * filename,
 				       boolean force_baseline));
-EXTERN(boolean) read_scan_script JPP((j_compress_ptr cinfo, char * filename));
-EXTERN(boolean) set_quality_ratings JPP((j_compress_ptr cinfo, char *arg,
+EXTERN_JPEG_TOOL(boolean) read_scan_script JPP((j_compress_ptr cinfo, char * filename));
+EXTERN_JPEG_TOOL(boolean) set_quality_ratings JPP((j_compress_ptr cinfo, char *arg,
 					 boolean force_baseline));
-EXTERN(boolean) set_quant_slots JPP((j_compress_ptr cinfo, char *arg));
-EXTERN(boolean) set_sample_factors JPP((j_compress_ptr cinfo, char *arg));
+EXTERN_JPEG_TOOL(boolean) set_quant_slots JPP((j_compress_ptr cinfo, char *arg));
+EXTERN_JPEG_TOOL(boolean) set_sample_factors JPP((j_compress_ptr cinfo, char *arg));
 
 /* djpeg support routines (in rdcolmap.c) */
 
-EXTERN(void) read_color_map JPP((j_decompress_ptr cinfo, FILE * infile));
+EXTERN_JPEG_TOOL(void) read_color_map JPP((j_decompress_ptr cinfo, FILE * infile));
 
 /* common support routines (in cdjpeg.c) */
 
-EXTERN(void) enable_signal_catcher JPP((j_common_ptr cinfo));
-EXTERN(void) start_progress_monitor JPP((j_common_ptr cinfo,
+EXTERN_JPEG_TOOL(void) enable_signal_catcher JPP((j_common_ptr cinfo));
+EXTERN_JPEG_TOOL(void) start_progress_monitor JPP((j_common_ptr cinfo,
 					 cd_progress_ptr progress));
-EXTERN(void) end_progress_monitor JPP((j_common_ptr cinfo));
-EXTERN(boolean) keymatch JPP((char * arg, const char * keyword, int minchars));
-EXTERN(FILE *) read_stdin JPP((void));
-EXTERN(FILE *) write_stdout JPP((void));
+EXTERN_JPEG_TOOL(void) end_progress_monitor JPP((j_common_ptr cinfo));
+EXTERN_JPEG_TOOL(boolean) keymatch JPP((char * arg, const char * keyword, int minchars));
+EXTERN_JPEG_TOOL(FILE *) read_stdin JPP((void));
+EXTERN_JPEG_TOOL(FILE *) write_stdout JPP((void));
 
 /* miscellaneous useful macros */
 

@@ -386,7 +386,7 @@ finish_output_bmp (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo)
  * The module selection routine for BMP format output.
  */
 
-GLOBAL(djpeg_dest_ptr)
+GLOBAL_JPEG_TOOL(djpeg_dest_ptr)
 jinit_write_bmp (j_decompress_ptr cinfo, boolean is_os2)
 {
   bmp_dest_ptr dest;

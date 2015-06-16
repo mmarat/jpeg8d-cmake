@@ -221,7 +221,7 @@ finish_output_tga (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo)
  * The module selection routine for Targa format output.
  */
 
-GLOBAL(djpeg_dest_ptr)
+GLOBAL_JPEG_TOOL(djpeg_dest_ptr)
 jinit_write_targa (j_decompress_ptr cinfo)
 {
   tga_dest_ptr dest;

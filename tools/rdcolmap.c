@@ -227,7 +227,7 @@ read_ppm_map (j_decompress_ptr cinfo, FILE * infile)
  *  Output: colormap and actual_number_of_colors fields are set in cinfo.
  */
 
-GLOBAL(void)
+GLOBAL_JPEG_TOOL(void)
 read_color_map (j_decompress_ptr cinfo, FILE * infile)
 {
   /* Allocate space for a color map of maximum supported size. */

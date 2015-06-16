@@ -780,7 +780,7 @@ jt_read_integer (const char ** strptr, JDIMENSION * result)
  * This code is loosely based on XParseGeometry from the X11 distribution.
  */
 
-GLOBAL(boolean)
+GLOBAL_JPEG_TOOL(boolean)
 jtransform_parse_crop_spec (jpeg_transform_info *info, const char *spec)
 {
   info->crop = FALSE;
@@ -874,7 +874,7 @@ trim_bottom_edge (jpeg_transform_info *info, JDIMENSION full_height)
  * and transformation is not perfect.  Otherwise returns TRUE.
  */
 
-GLOBAL(boolean)
+GLOBAL_JPEG_TOOL(boolean)
 jtransform_request_workspace (j_decompress_ptr srcinfo,
 			      jpeg_transform_info *info)
 {
@@ -1319,7 +1319,7 @@ adjust_exif_parameters (JOCTET FAR * data, unsigned int length,
  * to jpeg_write_coefficients().
  */
 
-GLOBAL(jvirt_barray_ptr *)
+GLOBAL_JPEG_TOOL(jvirt_barray_ptr *)
 jtransform_adjust_parameters (j_decompress_ptr srcinfo,
 			      j_compress_ptr dstinfo,
 			      jvirt_barray_ptr *src_coef_arrays,
@@ -1414,7 +1414,7 @@ jtransform_adjust_parameters (j_decompress_ptr srcinfo,
  * Note that some transformations will modify the source data arrays!
  */
 
-GLOBAL(void)
+GLOBAL_JPEG_TOOL(void)
 jtransform_execute_transform (j_decompress_ptr srcinfo,
 			      j_compress_ptr dstinfo,
 			      jvirt_barray_ptr *src_coef_arrays,
@@ -1487,7 +1487,7 @@ jtransform_execute_transform (j_decompress_ptr srcinfo,
  *           (may use custom action then)
  */
 
-GLOBAL(boolean)
+GLOBAL_JPEG_TOOL(boolean)
 jtransform_perfect_transform(JDIMENSION image_width, JDIMENSION image_height,
 			     int MCU_width, int MCU_height,
 			     JXFORM_CODE transform)
@@ -1526,7 +1526,7 @@ jtransform_perfect_transform(JDIMENSION image_width, JDIMENSION image_height,
  * This must be called before jpeg_read_header() to have the desired effect.
  */
 
-GLOBAL(void)
+GLOBAL_JPEG_TOOL(void)
 jcopy_markers_setup (j_decompress_ptr srcinfo, JCOPY_OPTION option)
 {
 #ifdef SAVE_MARKERS_SUPPORTED
@@ -1551,7 +1551,7 @@ jcopy_markers_setup (j_decompress_ptr srcinfo, JCOPY_OPTION option)
  * JFIF APP0 or Adobe APP14 markers if selected.
  */
 
-GLOBAL(void)
+GLOBAL_JPEG_TOOL(void)
 jcopy_markers_execute (j_decompress_ptr srcinfo, j_compress_ptr dstinfo,
 		       JCOPY_OPTION option)
 {

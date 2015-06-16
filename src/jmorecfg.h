@@ -208,6 +208,10 @@ typedef unsigned int JDIMENSION;
 #  define EXTERN(type)		extern type
 #endif
 
+/* mrt: these are for executable files, such as cjpeg.c etc */
+#define GLOBAL_JPEG_TOOL(type)		type
+#define EXTERN_JPEG_TOOL(type)		extern type
+
 /* This macro is used to declare a "method", that is, a function pointer.
  * We want to supply prototype parameters if the compiler can cope.
  * Note that the arglist parameter must be parenthesized!

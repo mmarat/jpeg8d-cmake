@@ -480,7 +480,7 @@ finish_input_tga (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
  * The module selection routine for Targa format input.
  */
 
-GLOBAL(cjpeg_source_ptr)
+GLOBAL_JPEG_TOOL(cjpeg_source_ptr)
 jinit_read_targa (j_compress_ptr cinfo)
 {
   tga_source_ptr source;
