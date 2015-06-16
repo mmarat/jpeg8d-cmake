@@ -64,7 +64,7 @@ elseif( MSVC )
 	message(STATUS "Workaround for MSVC optimization bug is implemented with pragma")
 	message(STATUS "Optimiations disabled for MSVC versions <= 30.0")
 	if( ${MSVC_VERSION} > 3000 )
-		message(WARNING "MSVC version ${MSVC_VERSION} is not supported, some tests might fail")
+		message(FATAL_ERROR "MSVC version ${MSVC_VERSION} is not supported, some tests might fail, see jquant2.c")
 	endif()
 	# so at the moment using #pragma optimize in jquant2.c
 	add_definitions("-D_CRT_SECURE_NO_WARNINGS") # disable non-secure API warnings
@@ -341,17 +341,11 @@ set(TESTFILES testorig.jpg testimg.ppm testimg.bmp testimg.jpg testprog.jpg
 	testimgp.jpg)
 
 set(jpeg_LIB_SRCS ${LIBSOURCES} src/jquant2.c ${INSTINCLUDES} ${OTHERINCLUDES})
-
-if( WIN32 )
-	# there are no dllexport in the source, and no .def file yet
-	# so .dll would not work
-	add_library(jpeg STATIC ${jpeg_LIB_SRCS})
-else()
-	add_library(jpeg SHARED ${jpeg_LIB_SRCS})
-endif()
+add_library(jpeg SHARED ${jpeg_LIB_SRCS})
 
 set_target_properties(jpeg PROPERTIES VERSION 8.4.0 SOVERSION 8
 	PUBLIC_HEADER "${INSTINCLUDES}"
+	DEFINE_SYMBOL "JPEG_DLL_EXPORTS"
 	FOLDER Libraries
 )
 target_include_directories(jpeg PUBLIC
